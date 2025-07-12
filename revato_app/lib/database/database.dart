@@ -1,5 +1,6 @@
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
+import '../model/tag_model.dart';
 
 class AppDatabase {
   static final AppDatabase _instance = AppDatabase._internal();
@@ -48,7 +49,7 @@ class AppDatabase {
           content TEXT NOT NULL,
           category_id INTEGER NOT NULL, 
           created_at TEXT NOT NULL,
-          FOREIGN KEY (category_id) REFERENCES redaction_categories (id) ON DELETE CASCADE,
+          FOREIGN KEY (category_id) REFERENCES redaction_categories (id) ON DELETE CASCADE
         )
     ''');
 
@@ -109,9 +110,6 @@ class AppDatabase {
       'CREATE INDEX idx_dream_tags_dream ON dream_tags(dream_id)',
     );
     await db.execute('CREATE INDEX idx_dream_tags_tag ON dream_tags(tag_id)');
-    await db.execute(
-      'CREATE INDEX idx_tags_usage_count ON tags(usage_count DESC)',
-    );
 
     // Insérer les catégories par défaut
     await _insertDefaultCategories(db);
@@ -168,5 +166,32 @@ class AppDatabase {
     for (final category in categories) {
       await db.insert('tag_categories', {...category, 'created_at': now});
     }
+  }
+
+  Future<List<String>> getTagsForCategory(String categoryName) async {
+    final db = await database;
+    // Récupérer l'id de la catégorie
+    final categoryResult = await db.query(
+      'tag_categories',
+      where: 'name = ?',
+      whereArgs: [categoryName],
+      limit: 1,
+    );
+    if (categoryResult.isEmpty) return [];
+    final categoryId = categoryResult.first['id'];
+
+    // Récupérer les tags de cette catégorie
+    final tagResults = await db.query(
+      'tags',
+      where: 'category_id = ?',
+      whereArgs: [categoryId],
+    );
+    return tagResults.map((row) => row['name'] as String).toList();
+  }
+
+  Future<List<TagCategory>> getAllTagCategories() async {
+    final db = await database;
+    final results = await db.query('tag_categories', orderBy: 'name');
+    return results.map((row) => TagCategory.fromMap(row)).toList();
   }
 }
