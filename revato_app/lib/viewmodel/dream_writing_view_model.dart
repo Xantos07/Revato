@@ -1,20 +1,23 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:revato_app/database/database.dart';
+import 'package:revato_app/model/redaction_model.dart';
 import 'package:revato_app/model/tag_model.dart';
 
 class DreamWritingViewModel extends ChangeNotifier {
   // ViewModel properties and methods
   final TextEditingController titleController = TextEditingController();
-  final TextEditingController dreamNoteController = TextEditingController();
-  final TextEditingController feelingNoteController = TextEditingController();
+
   bool isLoading = true;
   Map<String, List<String>> tagsByCategory = {};
+  Map<String, TextEditingController> noteControllers = {};
   int page = 0; // Current page index in the carousel
 
   List<TagCategory> _availableCategories = [];
   List<TagCategory> get availableCategories => _availableCategories;
-
+  List<RedactionCategory> _availableCategoriesRedaction = [];
+  List<RedactionCategory> get availableCategoriesRedaction =>
+      _availableCategoriesRedaction;
   DreamWritingViewModel() {
     _init();
   }
@@ -24,8 +27,13 @@ class DreamWritingViewModel extends ChangeNotifier {
     notifyListeners();
     try {
       _availableCategories = await AppDatabase().getAllTagCategories();
+      _availableCategoriesRedaction =
+          await AppDatabase().getAllRedactionCategories();
       print(
         'Catégories chargées: ${_availableCategories.map((c) => c.name).toList()}',
+      );
+      print(
+        'Catégories de rédaction chargées: ${_availableCategoriesRedaction.map((c) => c.name).toList()}',
       );
     } catch (e) {
       print('Erreur lors du chargement des catégories: $e');
@@ -42,9 +50,8 @@ class DreamWritingViewModel extends ChangeNotifier {
     return AppDatabase().getTagsForCategory(categoryName);
   }
 
-  // Method to set tags for a specific category
-  void setTagsForCategory(String categoryName, List<String> tags) {
-    // Save to DB
+  List<String> getLocalTagsForCategory(String categoryName) {
+    return tagsByCategory[categoryName] ?? [];
   }
 
   // Method to get existing tags for a specific category
@@ -52,12 +59,27 @@ class DreamWritingViewModel extends ChangeNotifier {
     return []; // Fetch from DB
   }
 
+  TextEditingController getNoteController(String category) {
+    return noteControllers.putIfAbsent(category, () => TextEditingController());
+  }
+
+  void setTagsForCategory(String category, List<String> tags) {
+    tagsByCategory[category] = tags;
+    notifyListeners();
+  }
+
+  void setNoteForCategory(String category, String note) {
+    noteControllers[category]?.text = note;
+    notifyListeners();
+  }
+
   /// Collecte toutes les données dans le format flexible
   Map<String, dynamic> collectData() {
     final data = {
       'title': titleController.text.trim(),
-      'dreamNote': dreamNoteController.text.trim(),
-      'feelingNote': feelingNoteController.text.trim(),
+      'redactionByCategory': noteControllers.map(
+        (key, controller) => MapEntry(key, controller.text.trim()),
+      ),
       'tagsByCategory': Map<String, List<String>>.from(tagsByCategory),
     };
 
@@ -70,8 +92,16 @@ class DreamWritingViewModel extends ChangeNotifier {
         print(' - ${entry.key}: ${entry.value}');
       }
     }
+    print('Rédactions par catégorie:');
+    for (final entry
+        in (data['redactionByCategory'] as Map<String, String>).entries) {
+      if (entry.value.isNotEmpty) {
+        print(' - ${entry.key}: ${entry.value}');
+      }
+    }
     print('==========================================');
 
+    // Retourne les données collectées
     return data;
   }
 

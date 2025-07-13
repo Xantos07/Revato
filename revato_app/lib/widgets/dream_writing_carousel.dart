@@ -32,33 +32,33 @@ class DreamWritingCarousel extends StatelessWidget {
               return FutureBuilder<List<String>>(
                 future: vm.getTagsForCategory(category.name),
                 builder: (context, snapshot) {
-                  final tags = snapshot.data ?? [];
+                  final existingTags = snapshot.data ?? [];
+                  final localTags = vm.getLocalTagsForCategory(
+                    category.name,
+                  ); // Tags en cours
                   return DreamTagsPage(
                     title: category.description ?? category.name,
                     label: 'Ajoute des ${category.name}...',
-                    tags: tags,
+                    tags: localTags, // ← Tags locaux, pas ceux de la base
                     onChanged:
                         (tags) => vm.setTagsForCategory(category.name, tags),
                     chipColor: category.getFlutterColor(),
                     chipTextColor: category.getTextColor(),
                     addButtonColor: category.getButtonColor(),
-                    existingTags: vm.getExistingTagsForCategory(category.name),
+                    existingTags:
+                        existingTags, // ← Tags de la base pour l'autocomplétion
                   );
                 },
               );
-            }).toList(),
+            }),
 
-            // Pages de rédaction (fixes)
-            DreamNotePage(
-              title: 'Rédaction du rêve',
-              label: 'Rédige ton rêve ici',
-              controller: vm.dreamNoteController,
-            ),
-            DreamNotePage(
-              title: 'Rédaction du ressenti',
-              label: 'Décris ton ressenti',
-              controller: vm.feelingNoteController,
-            ),
+            ...vm.availableCategoriesRedaction.map((category) {
+              return DreamNotePage(
+                title: category.description,
+                label: 'écrit sur : ${category.description}...',
+                controller: vm.getNoteController(category.description),
+              );
+            }),
           ];
 
           return SafeArea(

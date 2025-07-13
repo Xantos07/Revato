@@ -65,10 +65,10 @@ class DreamCarouselNavigation extends StatelessWidget {
                 ),
                 onPressed: onNext,
                 icon: Icon(
-                  page < totalPages ? Icons.arrow_forward : Icons.check,
+                  page < totalPages - 1 ? Icons.arrow_forward : Icons.check,
                 ),
                 label: Text(
-                  page < totalPages ? 'Suivant' : 'Valider',
+                  page < totalPages - 1 ? 'Suivant' : 'Valider',
                   style: const TextStyle(fontWeight: FontWeight.bold),
                 ),
               ),

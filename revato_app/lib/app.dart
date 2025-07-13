@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:revato_app/DreamListScreen.dart';
 import 'package:revato_app/database/database.dart';
 import 'widgets/dream_writing_carousel.dart';
 
@@ -57,7 +58,7 @@ class _DreamHomeScreenState extends State<DreamHomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final List<Widget> pages = [DreamWritingScreen()];
+    final List<Widget> pages = [DreamWritingScreen(), DreamListScreen()];
 
     return Scaffold(
       body: pages[_selectedIndex],
@@ -109,7 +110,23 @@ class DreamWritingScreen extends StatelessWidget {
         child: Container(
           constraints: const BoxConstraints(maxWidth: 600),
           padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 12),
-          child: DreamWritingCarousel(onSubmit: (Map<String, dynamic> data) {}),
+          child: DreamWritingCarousel(
+            onSubmit: (data) async {
+              try {
+                await AppDatabase().insertDreamWithData(data);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Rêve enregistré !')),
+                );
+                _DreamHomeScreenState.goToDreamList(context);
+              } catch (e) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('Erreur lors de l\'enregistrement : $e'),
+                  ),
+                );
+              }
+            },
+          ),
         ),
       ),
     );
