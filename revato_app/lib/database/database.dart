@@ -1,5 +1,7 @@
+import 'package:revato_app/model/redaction_model.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
+import '../model/tag_model.dart';
 
 class AppDatabase {
   static final AppDatabase _instance = AppDatabase._internal();
@@ -48,7 +50,7 @@ class AppDatabase {
           content TEXT NOT NULL,
           category_id INTEGER NOT NULL, 
           created_at TEXT NOT NULL,
-          FOREIGN KEY (category_id) REFERENCES redaction_categories (id) ON DELETE CASCADE,
+          FOREIGN KEY (category_id) REFERENCES redaction_categories (id) ON DELETE CASCADE
         )
     ''');
 
@@ -109,9 +111,6 @@ class AppDatabase {
       'CREATE INDEX idx_dream_tags_dream ON dream_tags(dream_id)',
     );
     await db.execute('CREATE INDEX idx_dream_tags_tag ON dream_tags(tag_id)');
-    await db.execute(
-      'CREATE INDEX idx_tags_usage_count ON tags(usage_count DESC)',
-    );
 
     // Insérer les catégories par défaut
     await _insertDefaultCategories(db);
@@ -168,5 +167,135 @@ class AppDatabase {
     for (final category in categories) {
       await db.insert('tag_categories', {...category, 'created_at': now});
     }
+  }
+
+  ///=========== FUNCTIONS =============== ///
+
+  /// Insère un rêve avec ses données associées
+  Future<void> insertDreamWithData(Map<String, dynamic> data) async {
+    final db = await database;
+    final batch = db.batch();
+
+    // 1. Insérer le rêve
+    final dreamId = await db.insert('dreams', {
+      'title': data['title'],
+      'created_at': DateTime.now().toIso8601String(),
+      'updated_at': DateTime.now().toIso8601String(),
+    });
+
+    // 2. Insérer les tags et liaisons
+    final tagsByCategory = data['tagsByCategory'] as Map<String, List<String>>;
+    for (final entry in tagsByCategory.entries) {
+      final categoryName = entry.key;
+      final tags = entry.value;
+      // Récupérer l'id de la catégorie
+      final categoryResult = await db.query(
+        'tag_categories',
+        where: 'name = ?',
+        whereArgs: [categoryName],
+        limit: 1,
+      );
+      if (categoryResult.isEmpty) continue;
+      final categoryId = categoryResult.first['id'];
+
+      for (final tag in tags) {
+        // Insérer le tag s'il n'existe pas
+        final tagId = await db.insert('tags', {
+          'name': tag,
+          'category_id': categoryId,
+          'created_at': DateTime.now().toIso8601String(),
+        }, conflictAlgorithm: ConflictAlgorithm.ignore);
+        // Récupérer l'id du tag (si déjà existant)
+        final tagRow = await db.query(
+          'tags',
+          where: 'name = ? AND category_id = ?',
+          whereArgs: [tag, categoryId],
+          limit: 1,
+        );
+        final realTagId = tagRow.first['id'];
+
+        // Insérer la liaison rêve-tag
+        await db.insert('dream_tags', {
+          'dream_id': dreamId,
+          'tag_id': realTagId,
+          'created_at': DateTime.now().toIso8601String(),
+        }, conflictAlgorithm: ConflictAlgorithm.ignore);
+      }
+    }
+
+    // 3. Insérer les rédactions et liaisons
+    final redactionsByCategory =
+        data['redactionByCategory'] as Map<String, String>;
+    for (final entry in redactionsByCategory.entries) {
+      final categoryName = entry.key;
+      final content = entry.value;
+      if (content.isEmpty) continue;
+      // Récupérer l'id de la catégorie de rédaction
+      final categoryResult = await db.query(
+        'redaction_categories',
+        where: 'name = ?',
+        whereArgs: [categoryName],
+        limit: 1,
+      );
+      if (categoryResult.isEmpty) continue;
+      final categoryId = categoryResult.first['id'];
+
+      // Insérer la rédaction
+      final redactionId = await db.insert('redactions', {
+        'content': content,
+        'category_id': categoryId,
+        'created_at': DateTime.now().toIso8601String(),
+      });
+
+      // Insérer la liaison rêve-rédaction
+      await db.insert('dream_redactions', {
+        'dream_id': dreamId,
+        'redaction_id': redactionId,
+        'created_at': DateTime.now().toIso8601String(),
+      });
+    }
+  }
+
+  // Méthodes pour récupérer les catégories et tags
+  Future<List<String>> getTagsForCategory(String categoryName) async {
+    final db = await database;
+    // Récupérer l'id de la catégorie
+    final categoryResult = await db.query(
+      'tag_categories',
+      where: 'name = ?',
+      whereArgs: [categoryName],
+      limit: 1,
+    );
+    if (categoryResult.isEmpty) return [];
+    final categoryId = categoryResult.first['id'];
+
+    // Récupérer les tags de cette catégorie
+    final tagResults = await db.query(
+      'tags',
+      where: 'category_id = ?',
+      whereArgs: [categoryId],
+    );
+    return tagResults.map((row) => row['name'] as String).toList();
+  }
+
+  // Méthode pour récupérer toutes les catégories de tags
+  Future<List<TagCategory>> getAllTagCategories() async {
+    final db = await database;
+    final results = await db.query('tag_categories', orderBy: 'name');
+    return results.map((row) => TagCategory.fromMap(row)).toList();
+  }
+
+  // Méthode pour récupérer toutes les catégories de rédaction
+  Future<List<RedactionCategory>> getAllRedactionCategories() async {
+    final db = await database;
+    final results = await db.query('redaction_categories', orderBy: 'name');
+    return results
+        .map(
+          (row) => RedactionCategory(
+            name: row['name'] as String,
+            description: row['description'] as String? ?? '',
+          ),
+        )
+        .toList();
   }
 }
