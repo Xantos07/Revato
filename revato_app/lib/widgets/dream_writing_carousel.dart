@@ -106,6 +106,15 @@ class DreamWritingCarousel extends StatelessWidget {
                     if (vm.page > 0) vm.setPage(vm.page - 1);
                   },
                   onNext: () {
+                    if (vm.page == 0 && vm.titleController.text.isEmpty) {
+                      // Si on est sur la première page et que le titre est vide, on ne peut pas
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Le titre ne peut pas être vide.'),
+                        ),
+                      );
+                      return;
+                    }
                     if (vm.page < pages.length - 1) {
                       vm.setPage(vm.page + 1);
                     } else {
