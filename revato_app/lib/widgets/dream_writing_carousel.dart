@@ -39,14 +39,14 @@ class DreamWritingCarousel extends StatelessWidget {
                   return DreamTagsPage(
                     title: category.description ?? category.name,
                     label: 'Ajoute des ${category.name}...',
-                    tags: localTags, // ← Tags locaux, pas ceux de la base
+                    tags: localTags, //  Tags locaux, pas ceux de la base
                     onChanged:
                         (tags) => vm.setTagsForCategory(category.name, tags),
                     chipColor: category.getFlutterColor(),
                     chipTextColor: category.getTextColor(),
                     addButtonColor: category.getButtonColor(),
                     existingTags:
-                        existingTags, // ← Tags de la base pour l'autocomplétion
+                        existingTags, // Tags de la base pour l'autocomplétion
                   );
                 },
               );
@@ -56,7 +56,9 @@ class DreamWritingCarousel extends StatelessWidget {
               return DreamNotePage(
                 title: category.description,
                 label: 'écrit sur : ${category.description}...',
-                controller: vm.getNoteController(category.description),
+                controller: vm.getNoteController(
+                  category.name,
+                ), // ← Utilise name au lieu de description
               );
             }),
           ];
@@ -104,6 +106,15 @@ class DreamWritingCarousel extends StatelessWidget {
                     if (vm.page > 0) vm.setPage(vm.page - 1);
                   },
                   onNext: () {
+                    if (vm.page == 0 && vm.titleController.text.isEmpty) {
+                      // Si on est sur la première page et que le titre est vide, on ne peut pas
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Le titre ne peut pas être vide.'),
+                        ),
+                      );
+                      return;
+                    }
                     if (vm.page < pages.length - 1) {
                       vm.setPage(vm.page + 1);
                     } else {

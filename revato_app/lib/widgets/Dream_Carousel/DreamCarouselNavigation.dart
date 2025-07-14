@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:revato_app/widgets/dream_writing_carousel.dart';
 
 class DreamCarouselNavigation extends StatelessWidget {
   final int page;

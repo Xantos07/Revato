@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:revato_app/DreamListScreen.dart';
+import 'package:revato_app/services/dream_service.dart';
+import 'package:revato_app/widgets/dream_list_screen.dart';
 import 'package:revato_app/database/database.dart';
 import 'widgets/dream_writing_carousel.dart';
 
@@ -113,7 +114,7 @@ class DreamWritingScreen extends StatelessWidget {
           child: DreamWritingCarousel(
             onSubmit: (data) async {
               try {
-                await AppDatabase().insertDreamWithData(data);
+                await DreamService().insertDreamWithData(data);
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(content: Text('Rêve enregistré !')),
                 );
