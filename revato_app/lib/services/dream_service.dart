@@ -44,7 +44,7 @@ class DreamService {
       // Permet de récupérer le nom du tag ET le nom de sa catégorie
       final tagRows = await db.rawQuery(
         '''
-      SELECT tags.id, tags.name, tag_categories.name as category_name
+      SELECT tags.id, tags.name, tag_categories.name as category_name, tag_categories.color as color
       FROM tags
       INNER JOIN dream_tags ON tags.id = dream_tags.tag_id
       INNER JOIN tag_categories ON tags.category_id = tag_categories.id
@@ -61,6 +61,9 @@ class DreamService {
                   'id': tagRow['id'],
                   'name': tagRow['name'] as String? ?? '',
                   'category_name': tagRow['category_name'] as String? ?? '',
+                  'color':
+                      tagRow['color'] as String? ??
+                      '#FFFFFF', // Ajout de la couleur
                 }),
               )
               .toList();
@@ -69,7 +72,7 @@ class DreamService {
       // Requête JOIN similaire pour les rédactions/notations
       final redactionRows = await db.rawQuery(
         '''
-      SELECT redactions.id, redactions.content, redaction_categories.name as category_name
+      SELECT redactions.id, redactions.content, redaction_categories.name as category_name, redaction_categories.display_name as display_name
       FROM redactions
       INNER JOIN dream_redactions ON redactions.id = dream_redactions.redaction_id
       INNER JOIN redaction_categories ON redactions.category_id = redaction_categories.id
@@ -89,6 +92,9 @@ class DreamService {
                   'id': r['id'],
                   'content': r['content'] as String? ?? '',
                   'category_name': r['category_name'] as String? ?? '',
+                  'display_name':
+                      r['display_name'] as String? ??
+                      '', // Ajout du displayName
                 }),
               )
               .toList();
@@ -113,7 +119,6 @@ class DreamService {
   /// Insère un rêve avec ses données associées
   Future<void> insertDreamWithData(Map<String, dynamic> data) async {
     final db = await AppDatabase().database;
-    final batch = db.batch();
 
     // 1. Insérer le rêve
     final dreamId = await db.insert('dreams', {
@@ -232,9 +237,27 @@ class DreamService {
         .map(
           (row) => RedactionCategory(
             name: row['name'] as String,
+            displayName: row['display_name'] as String,
             description: row['description'] as String? ?? '',
           ),
         )
         .toList();
+  }
+
+  // Méyhdoe pour récupérer les couleurs des catégories de tags
+  Future<Map<String, String>> getTagCategoryColors() async {
+    final db = await AppDatabase().database;
+    final results = await db.query(
+      'tag_categories',
+      columns: ['name', 'color'],
+    );
+    return Map.fromEntries(
+      results.map(
+        (row) => MapEntry(
+          row['name'] as String,
+          row['color'] as String? ?? '#FFFFFF',
+        ),
+      ),
+    );
   }
 }

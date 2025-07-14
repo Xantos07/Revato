@@ -1,17 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:revato_app/model/dream_model.dart';
+import 'package:revato_app/widgets/DreamDetail/DreamDetail.dart';
 import 'package:revato_app/widgets/DreamList/DreamChipsRow.dart';
+import 'package:revato_app/widgets/Utils.dart';
 
 class DreamSummaryCard extends StatelessWidget {
   final Dream dream;
 
   const DreamSummaryCard({required this.dream, Key? key}) : super(key: key);
-
-  String formatDate(DateTime date) {
-    return '${date.day.toString().padLeft(2, '0')}/'
-        '${date.month.toString().padLeft(2, '0')}/'
-        '${date.year}';
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -36,56 +32,7 @@ class DreamSummaryCard extends StatelessWidget {
         onTap: () {
           // Navigation vers les détails du rêve
           Navigator.of(context).push(
-            MaterialPageRoute(
-              builder:
-                  (_) => Scaffold(
-                    appBar: AppBar(
-                      title: Text(
-                        dream.title.isNotEmpty ? dream.title : 'Sans titre',
-                      ),
-                      backgroundColor: const Color(0xFF7C3AED),
-                      foregroundColor: Colors.white,
-                    ),
-                    body: SingleChildScrollView(
-                      padding: const EdgeInsets.all(16),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Contenu du rêve :',
-                            style: const TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                              color: Color(0xFF7C3AED),
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            dream.redactions.isNotEmpty
-                                ? dream.redactions
-                                    .map((r) => r.content)
-                                    .join('\n\n')
-                                : 'Aucun contenu disponible',
-                            style: const TextStyle(fontSize: 16),
-                          ),
-                          if (dream.tags.isNotEmpty) ...[
-                            const SizedBox(height: 16),
-                            const Text(
-                              'Tags :',
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                                color: Color(0xFF7C3AED),
-                              ),
-                            ),
-                            const SizedBox(height: 8),
-                            DreamChipsRow(dream),
-                          ],
-                        ],
-                      ),
-                    ),
-                  ),
-            ),
+            MaterialPageRoute(builder: (context) => Dreamdetail(dream: dream)),
           );
         },
         child: Padding(

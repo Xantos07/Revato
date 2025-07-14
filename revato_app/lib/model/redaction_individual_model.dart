@@ -9,6 +9,8 @@ class Redaction {
   content; // Contenu textuel de la rédaction (ce que l'utilisateur a écrit)
   final String
   categoryName; // Nom de la catégorie parente (ex: "dream_notation", "dream_notation_feeling")
+  final String
+  displayName; // Nom affiché dans l'UI (ex: "Notation du rêve", "Ressenti du rêve")
 
   /// **CONSTRUCTEUR**
   /// Crée une instance de Redaction avec les données obligatoires
@@ -16,6 +18,7 @@ class Redaction {
     this.id, // ID optionnel (géré par la DB)
     required this.content, // Contenu obligatoire (texte saisi par l'utilisateur)
     required this.categoryName, // Catégorie obligatoire (type de notation)
+    required this.displayName, // Nom affiché obligatoire (pour l'UI)
   });
 
   /// **FACTORY CONSTRUCTOR - DÉSÉRIALISATION**
@@ -30,6 +33,8 @@ class Redaction {
       categoryName:
           map['category_name'] as String? ??
           '', // Nom de catégorie, vide par défaut
+      displayName:
+          map['display_name'] as String? ?? '', // Nom affiché, vide par défaut
     );
   }
 }

@@ -64,7 +64,8 @@ class AppDatabase {
     await db.execute('''
       CREATE TABLE redaction_categories (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
-        name TEXT NOT NULL UNIQUE,             
+        name TEXT NOT NULL UNIQUE,  
+        display_name TEXT NOT NULL,           
         description TEXT,                     
         created_at TEXT NOT NULL
       )
@@ -101,7 +102,8 @@ class AppDatabase {
     await db.execute('''
         CREATE TABLE tag_categories (
           id INTEGER PRIMARY KEY AUTOINCREMENT,
-          name TEXT NOT NULL UNIQUE,             
+          name TEXT NOT NULL UNIQUE,     
+          display_name TEXT NOT NULL,         
           description TEXT,                      
           color TEXT,                            
           created_at TEXT NOT NULL
@@ -157,8 +159,16 @@ class AppDatabase {
     final now = DateTime.now().toIso8601String();
 
     final notations = [
-      {'name': 'dream_notation', 'description': 'notation du rêve'},
-      {'name': 'dream_notation_feeling', 'description': 'ressenti du rêve'},
+      {
+        'name': 'dream_notation',
+        'display_name': 'Notation du rêve',
+        'description': 'notation du rêve',
+      },
+      {
+        'name': 'dream_notation_feeling',
+        'display_name': 'Notation du ressenti du rêve',
+        'description': 'ressenti du rêve',
+      },
     ];
 
     for (final notation in notations) {
@@ -175,26 +185,31 @@ class AppDatabase {
     final categories = [
       {
         'name': 'location', // Lieux du rêve
-        'description': 'Lieux et environnements',
+        'display_name': 'Lieux du rêve',
+        'description': 'Lieux et environnements du rêve',
         'color': '#E57373', // Rouge clair
       },
       {
         'name': 'actor', // Personnes présentes
+        'display_name': 'Personnes dans le rêve',
         'description': 'Personnes et personnages',
         'color': '#64B5F6', // Bleu clair
       },
       {
         'name': 'previous_day_event', // Événements récents influents
+        'display_name': 'Événements récents',
         'description': 'Événements de la veille',
         'color': '#81C784', // Vert clair
       },
       {
         'name': 'previous_day_feeling', // État émotionnel précédent
+        'display_name': 'État émotionnel de la veille',
         'description': 'Ressentis de la veille',
         'color': '#BA68C8', // Violet clair
       },
       {
         'name': 'dream_feeling', // Émotions dans le rêve
+        'display_name': 'Émotions du rêve',
         'description': 'Ressentis du rêve',
         'color': '#FFD54F', // Jaune clair
       },

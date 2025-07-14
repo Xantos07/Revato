@@ -9,7 +9,8 @@ import 'package:flutter/services.dart';
 class TagCategory {
   // **PROPRIÉTÉS PRINCIPALES**
   int? id; // Identifiant unique en base de données (optionnel car auto-généré)
-  String name; // Nom technique de la catégorie (ex: "location", "actor")
+  String name; // Nom technique de la catégorie (ex: "dream_location")
+  String? displayName; // Nom affiché dans l'UI (ex: "Lieux", "Acteurs")
   String? description; // Description lisible (ex: "Lieux et environnements")
   String? color; // Couleur hex pour l'affichage (ex: "#E57373")
   DateTime createdAt; // Date de création
@@ -19,6 +20,7 @@ class TagCategory {
   TagCategory({
     this.id, // ID optionnel (géré par la DB)
     required this.name, // Nom obligatoire (clé technique)
+    this.displayName, // Nom affiché optionnel (pour l'UI)
     this.description, // Description optionnelle (affichage UI)
     this.color, // Couleur optionnelle (hex)
     DateTime? createdAt, // Date optionnelle
@@ -31,6 +33,7 @@ class TagCategory {
     return TagCategory(
       id: map['id'] as int?, // ID depuis la DB
       name: map['name'] as String, // Nom technique
+      displayName: map['display_name'] as String?, // Nom affiché optionnel
       description: map['description'] as String?, // Description optionnelle
       color: map['color'] as String?, // Couleur hex optionnelle
       createdAt: DateTime.parse(

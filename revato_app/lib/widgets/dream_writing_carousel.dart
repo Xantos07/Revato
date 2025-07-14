@@ -39,7 +39,7 @@ class DreamWritingCarousel extends StatelessWidget {
                   return DreamTagsPage(
                     title: category.description ?? category.name,
                     label: 'Ajoute des ${category.name}...',
-                    tags: localTags, // ← Tags locaux, pas ceux de la base
+                    tags: localTags, //  Tags locaux, pas ceux de la base
                     onChanged:
                         (tags) => vm.setTagsForCategory(category.name, tags),
                     chipColor: category.getFlutterColor(),

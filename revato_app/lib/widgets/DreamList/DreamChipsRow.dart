@@ -17,17 +17,17 @@ class DreamChipsRow extends StatelessWidget {
           Chip(
             label: Text(
               tag.name,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 11,
                 fontWeight: FontWeight.w500,
-                color: Color(0xFF7C3AED),
+                color: Colors.white,
               ),
             ),
-            backgroundColor: const Color(0xFF7C3AED).withOpacity(0.1),
-            side: BorderSide(
-              color: const Color(0xFF7C3AED).withOpacity(0.3),
-              width: 0.5,
-            ),
+            backgroundColor:
+                tag.color.isNotEmpty
+                    ? Color(int.parse(tag.color.replaceFirst('#', '0xFF')))
+                    : const Color(0xFF7C3AED), // Couleur par défaut si vide
+
             padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
             materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
           ),

@@ -8,13 +8,15 @@ class Tag {
   final String name; // Nom du tag (ex: "plage", "maman", "stress")
   final String
   categoryName; // Nom de la catégorie parente (ex: "location", "actor")
+  final String color; // Couleur hex pour l'affichage (optionnelle)
 
-  /// **CONSTRUCTEUR**
+  /// **CONSTR  UCTEUR**
   /// Crée une instance de Tag avec les données obligatoires
   Tag({
     this.id, // ID optionnel (géré par la DB)
     required this.name, // Nom obligatoire (valeur saisie par l'utilisateur)
     required this.categoryName, // Catégorie obligatoire (pour l'organisation)
+    required this.color, // Couleur obligatoire (pour l'affichage)
   });
 
   /// **FACTORY CONSTRUCTOR - DÉSÉRIALISATION**
@@ -27,6 +29,8 @@ class Tag {
       categoryName:
           map['category_name'] as String? ??
           '', // Nom de catégorie, vide par défaut
+      color:
+          map['color'] as String? ?? '#FFFFFF', // Couleur hex, blanc par défaut
     );
   }
 }
