@@ -46,7 +46,7 @@ class DreamWritingCarousel extends StatelessWidget {
                     chipTextColor: category.getTextColor(),
                     addButtonColor: category.getButtonColor(),
                     existingTags:
-                        existingTags, // ← Tags de la base pour l'autocomplétion
+                        existingTags, // Tags de la base pour l'autocomplétion
                   );
                 },
               );
@@ -56,7 +56,9 @@ class DreamWritingCarousel extends StatelessWidget {
               return DreamNotePage(
                 title: category.description,
                 label: 'écrit sur : ${category.description}...',
-                controller: vm.getNoteController(category.description),
+                controller: vm.getNoteController(
+                  category.name,
+                ), // ← Utilise name au lieu de description
               );
             }),
           ];

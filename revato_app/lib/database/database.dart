@@ -1,95 +1,131 @@
+// Imports nécessaires pour la gestion de la base de données SQLite et des modèles
 import 'package:revato_app/model/redaction_model.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 import '../model/tag_model.dart';
 
+/// **GESTIONNAIRE DE BASE DE DONNÉES**
+/// Classe singleton responsable de :
+/// - La connexion et l'initialisation de la base SQLite
+/// - La création et migration du schéma de base de données
+/// - La gestion du cycle de vie de la DB (ouverture/fermeture)
+/// - L'insertion des données par défaut (catégories, tags initiaux)
 class AppDatabase {
+  // **PATTERN SINGLETON** - Une seule instance de DB dans toute l'app
   static final AppDatabase _instance = AppDatabase._internal();
   static Database? _database;
 
+  // Constructeur privé pour empêcher la création d'instances multiples
   AppDatabase._internal();
 
+  // Factory constructor qui retourne toujours la même instance
   factory AppDatabase() => _instance;
 
+  /// **GETTER PRINCIPAL - ACCÈS À LA BASE**
+  /// Point d'entrée unique pour obtenir la connexion à la base de données
+  /// Lazy loading : crée la DB seulement au premier accès
   Future<Database> get database async {
-    if (_database != null) return _database!;
-    _database = await _initDatabase();
+    if (_database != null) return _database!; // Retourne l'instance existante
+    _database = await _initDatabase();         // Sinon, initialise la DB
     return _database!;
   }
 
+  /// **INITIALISATION PRIVÉE**
+  /// Configure le chemin et ouvre la base de données SQLite
   Future<Database> _initDatabase() async {
+    // Construit le chemin vers le fichier de base de données
     String path = join(await getDatabasesPath(), 'revato_dreams.db');
 
-    return await openDatabase(path, version: 1, onCreate: _createDatabase);
+    // Ouvre ou crée la base avec gestion des versions
+    return await openDatabase(
+      path, 
+      version: 1,                    // Version actuelle du schéma
+      onCreate: _createDatabase,     // Callback de création si DB n'existe pas
+    );
   }
 
+  /// **CRÉATION DU SCHÉMA DE BASE**
+  /// Définit toute la structure des tables et relations de l'application
+  /// Appelé automatiquement lors de la première ouverture
   Future<void> _createDatabase(Database db, int version) async {
-    // Nouvelle structure normalisée
+    
+    // **TABLE PRINCIPALE - DREAMS**
+    // Stocke les informations de base de chaque rêve
     await db.execute('''
         CREATE TABLE dreams (
-          id INTEGER PRIMARY KEY AUTOINCREMENT,
-          title TEXT NOT NULL,
-          created_at TEXT NOT NULL,
-          updated_at TEXT
+          id INTEGER PRIMARY KEY AUTOINCREMENT,  -- Identifiant unique
+          title TEXT NOT NULL,                   -- Titre du rêve
+          created_at TEXT NOT NULL,              -- Date de création (ISO 8601)
+          updated_at TEXT                        -- Date de mise à jour (optionnelle)
         )
     ''');
-    // Table de redaction_categories
+    
+    // **TABLE CATÉGORIES DE RÉDACTIONS**
+    // Définit les types de notes possibles (ex: "notation du rêve", "ressenti")
     await db.execute('''
       CREATE TABLE redaction_categories (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
-        name TEXT NOT NULL UNIQUE,
-        description TEXT,
+        name TEXT NOT NULL UNIQUE,             -- Nom technique (clé)
+        description TEXT,                      -- Description lisible
         created_at TEXT NOT NULL
       )
      ''');
 
-    // Table des redactions
+    // **TABLE RÉDACTIONS INDIVIDUELLES**
+    // Stocke le contenu textuel des notes utilisateur
     await db.execute('''
         CREATE TABLE redactions (
           id INTEGER PRIMARY KEY AUTOINCREMENT,
-          content TEXT NOT NULL,
-          category_id INTEGER NOT NULL, 
+          content TEXT NOT NULL,                 -- Contenu textuel de la rédaction
+          category_id INTEGER NOT NULL,          -- Référence vers redaction_categories
           created_at TEXT NOT NULL,
           FOREIGN KEY (category_id) REFERENCES redaction_categories (id) ON DELETE CASCADE
         )
     ''');
 
-    // Table de liaison entre rêves et redactions
+    // **TABLE DE LIAISON RÊVES-RÉDACTIONS**
+    // Relation many-to-many : un rêve peut avoir plusieurs rédactions
     await db.execute('''
         CREATE TABLE dream_redactions (
           id INTEGER PRIMARY KEY AUTOINCREMENT,
-          dream_id INTEGER NOT NULL,
-          redaction_id INTEGER NOT NULL,
+          dream_id INTEGER NOT NULL,             -- Référence vers dreams
+          redaction_id INTEGER NOT NULL,         -- Référence vers redactions
           created_at TEXT NOT NULL,
           FOREIGN KEY (dream_id) REFERENCES dreams (id) ON DELETE CASCADE,
           FOREIGN KEY (redaction_id) REFERENCES redactions (id) ON DELETE CASCADE,
-          UNIQUE(dream_id, redaction_id)
+          UNIQUE(dream_id, redaction_id)         -- Évite les doublons
         )
     ''');
 
-    // Table des catégories de tags
+    // **TABLE CATÉGORIES DE TAGS**
+    // Définit les types de tags possibles (ex: "location", "actor", "feeling")
     await db.execute('''
         CREATE TABLE tag_categories (
           id INTEGER PRIMARY KEY AUTOINCREMENT,
-          name TEXT NOT NULL UNIQUE,
-          description TEXT,
-          color TEXT,
+          name TEXT NOT NULL UNIQUE,             -- Nom technique (ex: "location")
+          description TEXT,                      -- Description lisible (ex: "Lieux et environnements")
+          color TEXT,                            -- Couleur hex pour l'affichage
           created_at TEXT NOT NULL
         )
     ''');
 
-    // Table des tags
+    // **TABLE TAGS INDIVIDUELS**
+    // Stocke les tags spécifiques saisis par l'utilisateur
     await db.execute('''
         CREATE TABLE tags (
           id INTEGER PRIMARY KEY AUTOINCREMENT,
-          name TEXT NOT NULL,
-          category_id INTEGER NOT NULL,          created_at TEXT NOT NULL,
+          name TEXT NOT NULL,                    -- Nom du tag (ex: "plage", "maman")
+          category_id INTEGER NOT NULL,          -- Référence vers tag_categories
+          created_at TEXT NOT NULL,
           FOREIGN KEY (category_id) REFERENCES tag_categories (id) ON DELETE CASCADE,
-          UNIQUE(name, category_id)
+          UNIQUE(name, category_id)              -- Un tag unique par catégorie
         )
     ''');
 
     // Table de liaison entre rêves et tags
+    await db.execute('''
+    // **TABLE DE LIAISON RÊVES-TAGS**
+    // Relation many-to-many : un rêve peut avoir plusieurs tags
     await db.execute('''
         CREATE TABLE dream_tags (
           id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -102,7 +138,8 @@ class AppDatabase {
         )
     ''');
 
-    // Index pour améliorer les performances
+    // **INDEX POUR OPTIMISATION DES PERFORMANCES**
+    // Accélère les requêtes fréquentes sur les colonnes clés
     await db.execute(
       'CREATE INDEX idx_dreams_created_at ON dreams(created_at)',
     );
@@ -112,13 +149,13 @@ class AppDatabase {
     );
     await db.execute('CREATE INDEX idx_dream_tags_tag ON dream_tags(tag_id)');
 
-    // Insérer les catégories par défaut
-    await _insertDefaultCategories(db);
-    // Insérer les notations par défaut
-    await _insertDefaultNotation(db);
+    // **INSERTION DES DONNÉES PAR DÉFAUT**
+    await _insertDefaultCategories(db);        // Catégories de tags prédéfinies
+    await _insertDefaultNotation(db);          // Catégories de rédactions prédéfinies
   }
 
-  /// Insère les notations par défaut
+  /// **INSERTION DES CATÉGORIES DE RÉDACTION PAR DÉFAUT**
+  /// Prépare les types de notes standard disponibles pour tous les rêves
   Future<void> _insertDefaultNotation(Database db) async {
     final now = DateTime.now().toIso8601String();
 
@@ -132,170 +169,43 @@ class AppDatabase {
     }
   }
 
-  /// Insère les catégories de tags par défaut
+  /// **INSERTION DES CATÉGORIES DE TAGS PAR DÉFAUT**
+  /// Prépare les types de tags standard avec leurs couleurs d'affichage
   Future<void> _insertDefaultCategories(Database db) async {
     final now = DateTime.now().toIso8601String();
 
+    // **CATÉGORIES PRÉDÉFINIES** avec couleurs pour l'interface
     final categories = [
       {
-        'name': 'location',
+        'name': 'location',                    // Lieux du rêve
         'description': 'Lieux et environnements',
-        'color': '#E57373',
+        'color': '#E57373',                   // Rouge clair
       },
       {
-        'name': 'actor',
+        'name': 'actor',                      // Personnes présentes
         'description': 'Personnes et personnages',
-        'color': '#64B5F6',
+        'color': '#64B5F6',                   // Bleu clair
       },
       {
-        'name': 'previous_day_event',
+        'name': 'previous_day_event',         // Événements récents influents
         'description': 'Événements de la veille',
-        'color': '#81C784',
+        'color': '#81C784',                   // Vert clair
       },
       {
-        'name': 'previous_day_feeling',
+        'name': 'previous_day_feeling',       // État émotionnel précédent
         'description': 'Ressentis de la veille',
-        'color': '#BA68C8',
+        'color': '#BA68C8',                   // Violet clair
       },
       {
-        'name': 'dream_feeling',
+        'name': 'dream_feeling',              // Émotions dans le rêve
         'description': 'Ressentis du rêve',
-        'color': '#FFD54F',
+        'color': '#FFD54F',                   // Jaune clair
       },
     ];
 
+    // **INSERTION EN BASE**
     for (final category in categories) {
       await db.insert('tag_categories', {...category, 'created_at': now});
     }
-  }
-
-  ///=========== FUNCTIONS =============== ///
-
-  /// Insère un rêve avec ses données associées
-  Future<void> insertDreamWithData(Map<String, dynamic> data) async {
-    final db = await database;
-    final batch = db.batch();
-
-    // 1. Insérer le rêve
-    final dreamId = await db.insert('dreams', {
-      'title': data['title'],
-      'created_at': DateTime.now().toIso8601String(),
-      'updated_at': DateTime.now().toIso8601String(),
-    });
-
-    // 2. Insérer les tags et liaisons
-    final tagsByCategory = data['tagsByCategory'] as Map<String, List<String>>;
-    for (final entry in tagsByCategory.entries) {
-      final categoryName = entry.key;
-      final tags = entry.value;
-      // Récupérer l'id de la catégorie
-      final categoryResult = await db.query(
-        'tag_categories',
-        where: 'name = ?',
-        whereArgs: [categoryName],
-        limit: 1,
-      );
-      if (categoryResult.isEmpty) continue;
-      final categoryId = categoryResult.first['id'];
-
-      for (final tag in tags) {
-        // Insérer le tag s'il n'existe pas
-        final tagId = await db.insert('tags', {
-          'name': tag,
-          'category_id': categoryId,
-          'created_at': DateTime.now().toIso8601String(),
-        }, conflictAlgorithm: ConflictAlgorithm.ignore);
-        // Récupérer l'id du tag (si déjà existant)
-        final tagRow = await db.query(
-          'tags',
-          where: 'name = ? AND category_id = ?',
-          whereArgs: [tag, categoryId],
-          limit: 1,
-        );
-        final realTagId = tagRow.first['id'];
-
-        // Insérer la liaison rêve-tag
-        await db.insert('dream_tags', {
-          'dream_id': dreamId,
-          'tag_id': realTagId,
-          'created_at': DateTime.now().toIso8601String(),
-        }, conflictAlgorithm: ConflictAlgorithm.ignore);
-      }
-    }
-
-    // 3. Insérer les rédactions et liaisons
-    final redactionsByCategory =
-        data['redactionByCategory'] as Map<String, String>;
-    for (final entry in redactionsByCategory.entries) {
-      final categoryName = entry.key;
-      final content = entry.value;
-      if (content.isEmpty) continue;
-      // Récupérer l'id de la catégorie de rédaction
-      final categoryResult = await db.query(
-        'redaction_categories',
-        where: 'name = ?',
-        whereArgs: [categoryName],
-        limit: 1,
-      );
-      if (categoryResult.isEmpty) continue;
-      final categoryId = categoryResult.first['id'];
-
-      // Insérer la rédaction
-      final redactionId = await db.insert('redactions', {
-        'content': content,
-        'category_id': categoryId,
-        'created_at': DateTime.now().toIso8601String(),
-      });
-
-      // Insérer la liaison rêve-rédaction
-      await db.insert('dream_redactions', {
-        'dream_id': dreamId,
-        'redaction_id': redactionId,
-        'created_at': DateTime.now().toIso8601String(),
-      });
-    }
-  }
-
-  // Méthodes pour récupérer les catégories et tags
-  Future<List<String>> getTagsForCategory(String categoryName) async {
-    final db = await database;
-    // Récupérer l'id de la catégorie
-    final categoryResult = await db.query(
-      'tag_categories',
-      where: 'name = ?',
-      whereArgs: [categoryName],
-      limit: 1,
-    );
-    if (categoryResult.isEmpty) return [];
-    final categoryId = categoryResult.first['id'];
-
-    // Récupérer les tags de cette catégorie
-    final tagResults = await db.query(
-      'tags',
-      where: 'category_id = ?',
-      whereArgs: [categoryId],
-    );
-    return tagResults.map((row) => row['name'] as String).toList();
-  }
-
-  // Méthode pour récupérer toutes les catégories de tags
-  Future<List<TagCategory>> getAllTagCategories() async {
-    final db = await database;
-    final results = await db.query('tag_categories', orderBy: 'name');
-    return results.map((row) => TagCategory.fromMap(row)).toList();
-  }
-
-  // Méthode pour récupérer toutes les catégories de rédaction
-  Future<List<RedactionCategory>> getAllRedactionCategories() async {
-    final db = await database;
-    final results = await db.query('redaction_categories', orderBy: 'name');
-    return results
-        .map(
-          (row) => RedactionCategory(
-            name: row['name'] as String,
-            description: row['description'] as String? ?? '',
-          ),
-        )
-        .toList();
   }
 }

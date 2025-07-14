@@ -1,69 +1,93 @@
+// Imports nécessaires pour la gestion des couleurs et interfaces
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+/// **MODÈLE TAG CATEGORY**
+/// Représente une catégorie de tags dans l'application.
+/// Les catégories permettent d'organiser les tags par thème
+/// (ex: "location", "actor", "previous_day_event", etc.)
 class TagCategory {
-  int? id;
-  String name;
-  String? description;
-  String? color;
-  DateTime createdAt;
+  // **PROPRIÉTÉS PRINCIPALES**
+  int? id; // Identifiant unique en base de données (optionnel car auto-généré)
+  String name; // Nom technique de la catégorie (ex: "location", "actor")
+  String? description; // Description lisible (ex: "Lieux et environnements")
+  String? color; // Couleur hex pour l'affichage (ex: "#E57373")
+  DateTime createdAt; // Date de création
 
+  /// **CONSTRUCTEUR**
+  /// Crée une instance de TagCategory avec les données obligatoires et optionnelles
   TagCategory({
-    this.id,
-    required this.name,
-    this.description,
-    this.color,
-    DateTime? createdAt,
-  }) : createdAt = createdAt ?? DateTime.now();
+    this.id, // ID optionnel (géré par la DB)
+    required this.name, // Nom obligatoire (clé technique)
+    this.description, // Description optionnelle (affichage UI)
+    this.color, // Couleur optionnelle (hex)
+    DateTime? createdAt, // Date optionnelle
+  }) : createdAt = createdAt ?? DateTime.now(); // Date actuelle par défaut
 
-  /// Crée une instance TagCategory depuis les données de la base
+  /// **FACTORY CONSTRUCTOR - DÉSÉRIALISATION**
+  /// Convertit les données brutes de la base de données en objet TagCategory
+  /// Utilisé quand on récupère les catégories depuis SQLite
   factory TagCategory.fromMap(Map<String, dynamic> map) {
     return TagCategory(
-      id: map['id'] as int?,
-      name: map['name'] as String,
-      description: map['description'] as String?,
-      color: map['color'] as String?,
-      createdAt: DateTime.parse(map['created_at'] as String),
+      id: map['id'] as int?, // ID depuis la DB
+      name: map['name'] as String, // Nom technique
+      description: map['description'] as String?, // Description optionnelle
+      color: map['color'] as String?, // Couleur hex optionnelle
+      createdAt: DateTime.parse(
+        map['created_at'] as String,
+      ), // Parse de la date
     );
   }
 
-  /// Convertit l'instance en Map pour la base de données
+  /// **SÉRIALISATION**
+  /// Convertit l'instance en Map pour la sauvegarde en base de données
   Map<String, dynamic> toMap() {
     return {
       'id': id,
       'name': name,
       'description': description,
       'color': color,
-      'created_at': createdAt.toIso8601String(),
+      'created_at': createdAt.toIso8601String(), // Format ISO pour la DB
     };
   }
 
-  /// Convertit la couleur hex de la DB en Color Flutter
+  /// **UTILITAIRE COULEUR - CONVERSION HEX → FLUTTER COLOR**
+  /// Convertit la couleur hex stockée en DB en objet Color utilisable par Flutter
   Color getFlutterColor() {
+    // Couleur par défaut si aucune couleur définie
     if (color == null || color!.isEmpty) {
-      return const Color(0xFF90CAF9);
+      return const Color(0xFF90CAF9); // Bleu clair par défaut
     }
 
     try {
-      // Enlever le # si présent et ajouter l'opacité FF
-      final colorString = color!.replaceAll('#', '');
-      final colorValue = int.parse('FF$colorString', radix: 16);
+      // Nettoyer et parser la couleur hex
+      final colorString = color!.replaceAll('#', ''); // Supprimer le #
+      final colorValue = int.parse(
+        'FF$colorString',
+        radix: 16,
+      ); // Ajouter opacité FF
       return Color(colorValue);
     } catch (e) {
-      return const Color(0xFF90CAF9); // Couleur par défaut en cas d'erreur
+      // Retourner la couleur par défaut en cas d'erreur de parsing
+      return const Color(0xFF90CAF9);
     }
   }
 
-  /// Génère automatiquement une couleur de bouton plus foncée
+  /// **UTILITAIRE COULEUR - BOUTON**
+  /// Génère la couleur pour les boutons de cette catégorie
   Color getButtonColor() {
-    return getFlutterColor();
+    return getFlutterColor(); // Utilise la même couleur pour les boutons
   }
 
+  /// **UTILITAIRE COULEUR - TEXTE ADAPTATIF**
   /// Détermine automatiquement la couleur du texte (blanc ou noir)
+  /// selon la luminance de la couleur de fond pour assurer la lisibilité
   Color getTextColor() {
     final color = getFlutterColor();
-    // Calculer la luminance pour déterminer si utiliser du texte blanc ou noir
+    // Calculer la luminance (0.0 = noir, 1.0 = blanc)
     final luminance = color.computeLuminance();
+    // Si la couleur est claire (luminance > 0.5) → texte noir
+    // Si la couleur est foncée (luminance <= 0.5) → texte blanc
     return luminance > 0.5 ? Colors.black : Colors.white;
   }
 }
