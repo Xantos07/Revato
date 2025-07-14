@@ -26,7 +26,7 @@ class AppDatabase {
   /// Lazy loading : crée la DB seulement au premier accès
   Future<Database> get database async {
     if (_database != null) return _database!; // Retourne l'instance existante
-    _database = await _initDatabase();         // Sinon, initialise la DB
+    _database = await _initDatabase(); // Sinon, initialise la DB
     return _database!;
   }
 
@@ -38,9 +38,9 @@ class AppDatabase {
 
     // Ouvre ou crée la base avec gestion des versions
     return await openDatabase(
-      path, 
-      version: 1,                    // Version actuelle du schéma
-      onCreate: _createDatabase,     // Callback de création si DB n'existe pas
+      path,
+      version: 1, // Version actuelle du schéma
+      onCreate: _createDatabase, // Callback de création si DB n'existe pas
     );
   }
 
@@ -48,25 +48,24 @@ class AppDatabase {
   /// Définit toute la structure des tables et relations de l'application
   /// Appelé automatiquement lors de la première ouverture
   Future<void> _createDatabase(Database db, int version) async {
-    
     // **TABLE PRINCIPALE - DREAMS**
     // Stocke les informations de base de chaque rêve
     await db.execute('''
         CREATE TABLE dreams (
-          id INTEGER PRIMARY KEY AUTOINCREMENT,  -- Identifiant unique
-          title TEXT NOT NULL,                   -- Titre du rêve
-          created_at TEXT NOT NULL,              -- Date de création (ISO 8601)
-          updated_at TEXT                        -- Date de mise à jour (optionnelle)
+          id INTEGER PRIMARY KEY AUTOINCREMENT, 
+          title TEXT NOT NULL,                   
+          created_at TEXT NOT NULL,              
+          updated_at TEXT                        
         )
     ''');
-    
+
     // **TABLE CATÉGORIES DE RÉDACTIONS**
     // Définit les types de notes possibles (ex: "notation du rêve", "ressenti")
     await db.execute('''
       CREATE TABLE redaction_categories (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
-        name TEXT NOT NULL UNIQUE,             -- Nom technique (clé)
-        description TEXT,                      -- Description lisible
+        name TEXT NOT NULL UNIQUE,             
+        description TEXT,                     
         created_at TEXT NOT NULL
       )
      ''');
@@ -76,8 +75,8 @@ class AppDatabase {
     await db.execute('''
         CREATE TABLE redactions (
           id INTEGER PRIMARY KEY AUTOINCREMENT,
-          content TEXT NOT NULL,                 -- Contenu textuel de la rédaction
-          category_id INTEGER NOT NULL,          -- Référence vers redaction_categories
+          content TEXT NOT NULL,                 
+          category_id INTEGER NOT NULL,          
           created_at TEXT NOT NULL,
           FOREIGN KEY (category_id) REFERENCES redaction_categories (id) ON DELETE CASCADE
         )
@@ -88,12 +87,12 @@ class AppDatabase {
     await db.execute('''
         CREATE TABLE dream_redactions (
           id INTEGER PRIMARY KEY AUTOINCREMENT,
-          dream_id INTEGER NOT NULL,             -- Référence vers dreams
-          redaction_id INTEGER NOT NULL,         -- Référence vers redactions
+          dream_id INTEGER NOT NULL,             
+          redaction_id INTEGER NOT NULL,         
           created_at TEXT NOT NULL,
           FOREIGN KEY (dream_id) REFERENCES dreams (id) ON DELETE CASCADE,
           FOREIGN KEY (redaction_id) REFERENCES redactions (id) ON DELETE CASCADE,
-          UNIQUE(dream_id, redaction_id)         -- Évite les doublons
+          UNIQUE(dream_id, redaction_id)         
         )
     ''');
 
@@ -102,9 +101,9 @@ class AppDatabase {
     await db.execute('''
         CREATE TABLE tag_categories (
           id INTEGER PRIMARY KEY AUTOINCREMENT,
-          name TEXT NOT NULL UNIQUE,             -- Nom technique (ex: "location")
-          description TEXT,                      -- Description lisible (ex: "Lieux et environnements")
-          color TEXT,                            -- Couleur hex pour l'affichage
+          name TEXT NOT NULL UNIQUE,             
+          description TEXT,                      
+          color TEXT,                            
           created_at TEXT NOT NULL
         )
     ''');
@@ -114,29 +113,27 @@ class AppDatabase {
     await db.execute('''
         CREATE TABLE tags (
           id INTEGER PRIMARY KEY AUTOINCREMENT,
-          name TEXT NOT NULL,                    -- Nom du tag (ex: "plage", "maman")
-          category_id INTEGER NOT NULL,          -- Référence vers tag_categories
+          name TEXT NOT NULL,                    
+          category_id INTEGER NOT NULL,          
           created_at TEXT NOT NULL,
           FOREIGN KEY (category_id) REFERENCES tag_categories (id) ON DELETE CASCADE,
-          UNIQUE(name, category_id)              -- Un tag unique par catégorie
+          UNIQUE(name, category_id)              
         )
     ''');
 
-    // Table de liaison entre rêves et tags
-    await db.execute('''
     // **TABLE DE LIAISON RÊVES-TAGS**
     // Relation many-to-many : un rêve peut avoir plusieurs tags
     await db.execute('''
-        CREATE TABLE dream_tags (
-          id INTEGER PRIMARY KEY AUTOINCREMENT,
-          dream_id INTEGER NOT NULL,
-          tag_id INTEGER NOT NULL,
-          created_at TEXT NOT NULL,
-          FOREIGN KEY (dream_id) REFERENCES dreams (id) ON DELETE CASCADE,
-          FOREIGN KEY (tag_id) REFERENCES tags (id) ON DELETE CASCADE,
-          UNIQUE(dream_id, tag_id)
-        )
-    ''');
+    CREATE TABLE dream_tags (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      dream_id INTEGER NOT NULL,
+      tag_id INTEGER NOT NULL,
+      created_at TEXT NOT NULL,
+      FOREIGN KEY (dream_id) REFERENCES dreams (id) ON DELETE CASCADE,
+      FOREIGN KEY (tag_id) REFERENCES tags (id) ON DELETE CASCADE,
+      UNIQUE(dream_id, tag_id)
+    )
+''');
 
     // **INDEX POUR OPTIMISATION DES PERFORMANCES**
     // Accélère les requêtes fréquentes sur les colonnes clés
@@ -150,8 +147,8 @@ class AppDatabase {
     await db.execute('CREATE INDEX idx_dream_tags_tag ON dream_tags(tag_id)');
 
     // **INSERTION DES DONNÉES PAR DÉFAUT**
-    await _insertDefaultCategories(db);        // Catégories de tags prédéfinies
-    await _insertDefaultNotation(db);          // Catégories de rédactions prédéfinies
+    await _insertDefaultCategories(db); // Catégories de tags prédéfinies
+    await _insertDefaultNotation(db); // Catégories de rédactions prédéfinies
   }
 
   /// **INSERTION DES CATÉGORIES DE RÉDACTION PAR DÉFAUT**
@@ -177,29 +174,29 @@ class AppDatabase {
     // **CATÉGORIES PRÉDÉFINIES** avec couleurs pour l'interface
     final categories = [
       {
-        'name': 'location',                    // Lieux du rêve
+        'name': 'location', // Lieux du rêve
         'description': 'Lieux et environnements',
-        'color': '#E57373',                   // Rouge clair
+        'color': '#E57373', // Rouge clair
       },
       {
-        'name': 'actor',                      // Personnes présentes
+        'name': 'actor', // Personnes présentes
         'description': 'Personnes et personnages',
-        'color': '#64B5F6',                   // Bleu clair
+        'color': '#64B5F6', // Bleu clair
       },
       {
-        'name': 'previous_day_event',         // Événements récents influents
+        'name': 'previous_day_event', // Événements récents influents
         'description': 'Événements de la veille',
-        'color': '#81C784',                   // Vert clair
+        'color': '#81C784', // Vert clair
       },
       {
-        'name': 'previous_day_feeling',       // État émotionnel précédent
+        'name': 'previous_day_feeling', // État émotionnel précédent
         'description': 'Ressentis de la veille',
-        'color': '#BA68C8',                   // Violet clair
+        'color': '#BA68C8', // Violet clair
       },
       {
-        'name': 'dream_feeling',              // Émotions dans le rêve
+        'name': 'dream_feeling', // Émotions dans le rêve
         'description': 'Ressentis du rêve',
-        'color': '#FFD54F',                   // Jaune clair
+        'color': '#FFD54F', // Jaune clair
       },
     ];
 
