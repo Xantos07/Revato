@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:revato_app/model/dream_model.dart';
 import 'package:revato_app/services/dream_service.dart';
 import 'package:revato_app/services/dream_filter_viewmodel.dart';
+import 'package:revato_app/widgets/DreamFilter/filter_panel.dart';
 import 'package:revato_app/widgets/DreamFilter/search_bar.dart';
 import 'package:revato_app/widgets/DreamList/DreamSummaryCard.dart';
 
@@ -33,7 +34,15 @@ class DreamListScreen extends StatelessWidget {
         body: Column(
           children: [
             // Search bar for filtering dreams
-            DreamSearchBar(),
+            DreamSearchBar(
+              onOpenFilters: () {
+                // Ici tu ouvres ton panneau, ex:
+                showModalBottomSheet(
+                  context: context,
+                  builder: (context) => FilterPanel(),
+                );
+              },
+            ),
             Expanded(
               child: FutureBuilder<List<Dream>>(
                 future: _dreamService.getAllDreamsWithTagsAndRedactions(),

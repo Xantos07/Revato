@@ -3,7 +3,9 @@ import 'package:provider/provider.dart';
 import 'package:revato_app/services/dream_filter_viewmodel.dart';
 
 class DreamSearchBar extends StatefulWidget {
-  const DreamSearchBar({super.key});
+  final VoidCallback? onOpenFilters; // Callback pour ouvrir les filtres avancés
+
+  const DreamSearchBar({super.key, this.onOpenFilters});
 
   @override
   State<DreamSearchBar> createState() => _DreamSearchBarState();
@@ -32,6 +34,7 @@ class _DreamSearchBarState extends State<DreamSearchBar> {
   @override
   Widget build(BuildContext context) {
     final vm = Provider.of<DreamFilterViewModel>(context);
+
     return Container(
       margin: const EdgeInsets.all(16),
       child: Column(
@@ -72,6 +75,7 @@ class _DreamSearchBarState extends State<DreamSearchBar> {
                       child: IconButton(
                         onPressed: () {
                           // Ouvrir les filtres avancés
+                          widget.onOpenFilters?.call();
                         },
                         icon: Icon(Icons.tune, color: Colors.grey[400]),
                         tooltip: 'Filtres avancés',
