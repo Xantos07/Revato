@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:revato_app/services/dream_filter_viewmodel.dart';
+import 'package:revato_app/viewmodel/dream_filter_view_model.dart';
 
 class DreamSearchBar extends StatefulWidget {
   final VoidCallback? onOpenFilters; // Callback pour ouvrir les filtres avancés

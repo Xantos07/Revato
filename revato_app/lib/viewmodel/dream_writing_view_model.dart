@@ -4,6 +4,7 @@ import 'package:flutter/material.dart'; // Pour TextEditingController
 import 'package:revato_app/model/redaction_model.dart';
 import 'package:revato_app/model/tag_model.dart';
 import 'package:revato_app/services/dream_service.dart';
+import 'package:revato_app/services/tag_service.dart';
 
 /// **VIEW MODEL - GESTIONNAIRE D'ÉTAT**
 /// Pattern MVVM : sépare la logique métier de l'interface utilisateur
@@ -13,6 +14,10 @@ import 'package:revato_app/services/dream_service.dart';
 /// - Stocker temporairement les données pendant la saisie
 /// - Notifier l'UI des changements d'état (via ChangeNotifier)
 class DreamWritingViewModel extends ChangeNotifier {
+  // **SERVICES**
+  final TagService _tagService = TagService();
+  final DreamService _dreamService = DreamService();
+
   // **CONTRÔLEURS D'INTERFACE**
   final TextEditingController titleController =
       TextEditingController(); // Titre du rêve
@@ -51,9 +56,9 @@ class DreamWritingViewModel extends ChangeNotifier {
 
     try {
       // **2. RÉCUPÉRATION DES DONNÉES DEPUIS LA DB**
-      _availableCategories = await DreamService().getAllTagCategories();
+      _availableCategories = await _tagService.getAllTagCategories();
       _availableCategoriesRedaction =
-          await DreamService().getAllRedactionCategories();
+          await _dreamService.getAllRedactionCategories();
 
       // **DEBUG** - Vérification des données chargées
       print(
@@ -74,7 +79,7 @@ class DreamWritingViewModel extends ChangeNotifier {
   /// **RÉCUPÉRATION DES TAGS** pour une catégorie spécifique
   /// Méthode asynchrone qui interroge la base de données
   Future<List<String>> getTagsForCategory(String categoryName) {
-    return DreamService().getTagsForCategory(categoryName);
+    return _tagService.getTagsForCategory(categoryName);
   }
 
   /// **RÉCUPÉRATION DES TAGS LOCAUX** (stockés temporairement)

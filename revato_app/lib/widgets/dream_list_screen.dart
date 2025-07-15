@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:revato_app/model/dream_model.dart';
 import 'package:revato_app/services/dream_service.dart';
-import 'package:revato_app/services/dream_filter_viewmodel.dart';
+import 'package:revato_app/viewmodel/dream_filter_view_model.dart';
 import 'package:revato_app/widgets/DreamFilter/filter_panel.dart';
 import 'package:revato_app/widgets/DreamFilter/search_bar.dart';
 import 'package:revato_app/widgets/DreamList/DreamSummaryCard.dart';
@@ -37,9 +37,19 @@ class DreamListScreen extends StatelessWidget {
             DreamSearchBar(
               onOpenFilters: () {
                 // Ici tu ouvres ton panneau, ex:
+                final filterVm = Provider.of<DreamFilterViewModel>(
+                  context,
+                  listen: false,
+                );
                 showModalBottomSheet(
                   context: context,
-                  builder: (context) => FilterPanel(),
+                  isScrollControlled: true,
+                  backgroundColor: Colors.transparent,
+                  builder:
+                      (context) => ChangeNotifierProvider.value(
+                        value: filterVm,
+                        child: FilterPanel(),
+                      ),
                 );
               },
             ),

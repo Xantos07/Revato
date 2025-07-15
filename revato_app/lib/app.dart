@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:revato_app/services/dream_filter_viewmodel.dart';
+import 'package:revato_app/viewmodel/dream_filter_view_model.dart';
 import 'package:revato_app/services/dream_service.dart';
 import 'package:revato_app/widgets/dream_list_screen.dart';
 import 'package:revato_app/database/database.dart';
