@@ -4,7 +4,6 @@ import 'package:flutter/material.dart'; // Pour TextEditingController
 import 'package:revato_app/model/redaction_model.dart';
 import 'package:revato_app/model/tag_model.dart';
 import 'package:revato_app/services/dream_service.dart';
-import 'package:revato_app/services/tag_service.dart';
 
 /// **VIEW MODEL - GESTIONNAIRE D'ÉTAT**
 /// Pattern MVVM : sépare la logique métier de l'interface utilisateur
@@ -13,79 +12,90 @@ import 'package:revato_app/services/tag_service.dart';
 /// - Coordonner les interactions entre l'UI et les services
 /// - Stocker temporairement les données pendant la saisie
 /// - Notifier l'UI des changements d'état (via ChangeNotifier)
+
 class DreamWritingViewModel extends ChangeNotifier {
-  // **SERVICES**
-  final TagService _tagService = TagService();
-  final DreamService _dreamService = DreamService();
+  // **INJECTION DE DÉPENDANCE** - Meilleure testabilité
+  final DreamService _dreamService;
 
-  // **CONTRÔLEURS D'INTERFACE**
-  final TextEditingController titleController =
-      TextEditingController(); // Titre du rêve
-
-  // **ÉTATS DE L'APPLICATION**
-  bool isLoading = true; // Indique si les données sont en cours de chargement
-  int page = 0; // Index de la page courante dans le carousel
-
-  // **DONNÉES TEMPORAIRES** (stockage pendant la saisie)
-  Map<String, List<String>> tagsByCategory =
-      {}; // Tags sélectionnés par catégorie
-  Map<String, TextEditingController> noteControllers =
-      {}; // Contrôleurs des champs de notes
-
-  // **DONNÉES MÉTIER** (récupérées depuis la DB)
-  List<TagCategory> _availableCategories = []; // Catégories de tags disponibles
-  List<RedactionCategory> _availableCategoriesRedaction =
-      []; // Catégories de rédactions
-
-  // **GETTERS PUBLICS** (accès lecture seule pour l'UI)
-  List<TagCategory> get availableCategories => _availableCategories;
-  List<RedactionCategory> get availableCategoriesRedaction =>
-      _availableCategoriesRedaction;
-
-  /// **CONSTRUCTEUR** - Initialise automatiquement le ViewModel
-  DreamWritingViewModel() {
-    _init(); // Charge les données au démarrage
+  /// **CONSTRUCTEUR AVEC INJECTION DE DÉPENDANCE**
+  DreamWritingViewModel({DreamService? dreamService})
+    : _dreamService = dreamService ?? DreamService() {
+    _initializeAsync();
   }
 
+  /// **INITIALISATION ASYNCHRONE**
+  Future<void> _initializeAsync() async {
+    await _loadCategories();
+  }
+
+  // **ÉTAT PRIVÉ - PAS DE DÉPENDANCES UI**
+
+  // État de l'application (MVVM compliant)
+  bool _isLoading = true;
+  int _currentPage = 0;
+
+  // Données de saisie
+  String _dreamTitle = '';
+  Map<String, List<String>> _tagsByCategory = {};
+  Map<String, String> _notesByCategory = {};
+
+  // Données métier
+  List<TagCategory> _availableCategories = [];
+  List<RedactionCategory> _availableCategoriesRedaction = [];
+
+  // **GETTERS PUBLICS - EXPOSITION POUR LA VIEW**
+
+  bool get isLoading => _isLoading;
+  int get currentPage => _currentPage;
+  String get dreamTitle => _dreamTitle;
+  Map<String, List<String>> get tagsByCategory =>
+      Map.unmodifiable(_tagsByCategory);
+  Map<String, String> get notesByCategory => Map.unmodifiable(_notesByCategory);
+  List<TagCategory> get availableCategories =>
+      List.unmodifiable(_availableCategories);
+  List<RedactionCategory> get availableCategoriesRedaction =>
+      List.unmodifiable(_availableCategoriesRedaction);
+
+  /// **CONSTRUCTEUR** - Initialise automatiquement le ViewModel
   /// **INITIALISATION PRIVÉE**
   /// Charge les catégories depuis la base de données au démarrage
-  Future<void> _init() async {
+  Future<void> _loadCategories() async {
     // **1. DÉBUT DU CHARGEMENT**
-    isLoading = true;
+    _isLoading = true;
     notifyListeners(); // Notifie l'UI pour afficher un indicateur de chargement
 
     try {
       // **2. RÉCUPÉRATION DES DONNÉES DEPUIS LA DB**
-      _availableCategories = await _tagService.getAllTagCategories();
+      _availableCategories = await _dreamService.getAllTagCategories();
       _availableCategoriesRedaction =
           await _dreamService.getAllRedactionCategories();
 
       // **DEBUG** - Vérification des données chargées
-      print(
+      debugPrint(
         'Catégories chargées: ${_availableCategories.map((c) => c.name).toList()}',
       );
-      print(
+      debugPrint(
         'Catégories de rédaction chargées: ${_availableCategoriesRedaction.map((c) => c.name).toList()}',
       );
     } catch (e) {
-      print('Erreur lors du chargement des catégories: $e');
+      debugPrint('Erreur lors du chargement des catégories: $e');
     }
 
     // **3. FIN DU CHARGEMENT**
-    isLoading = false;
+    _isLoading = false;
     notifyListeners(); // Notifie l'UI que les données sont prêtes
   }
 
   /// **RÉCUPÉRATION DES TAGS** pour une catégorie spécifique
   /// Méthode asynchrone qui interroge la base de données
   Future<List<String>> getTagsForCategory(String categoryName) {
-    return _tagService.getTagsForCategory(categoryName);
+    return _dreamService.getTagsForCategory(categoryName);
   }
 
   /// **RÉCUPÉRATION DES TAGS LOCAUX** (stockés temporairement)
   /// Retourne les tags sélectionnés par l'utilisateur pour une catégorie
   List<String> getLocalTagsForCategory(String categoryName) {
-    return tagsByCategory[categoryName] ?? [];
+    return _tagsByCategory[categoryName] ?? [];
   }
 
   /// **RÉCUPÉRATION DES TAGS EXISTANTS** (à implémenter)
@@ -94,24 +104,28 @@ class DreamWritingViewModel extends ChangeNotifier {
     return []; // TODO: Récupérer depuis la DB lors de l'édition
   }
 
-  /// **GESTIONNAIRE DE CONTRÔLEURS DE NOTES**
-  /// Crée ou récupère le contrôleur de texte pour une catégorie de notes
-  /// Pattern Lazy Loading : crée le contrôleur seulement quand nécessaire
-  TextEditingController getNoteController(String category) {
-    return noteControllers.putIfAbsent(category, () => TextEditingController());
+  /// **RÉCUPÉRATION D'UNE NOTE** pour une catégorie
+  String getNoteForCategory(String categoryName) {
+    return _notesByCategory[categoryName] ?? '';
+  }
+
+  /// **MISE À JOUR DU TITRE**
+  void updateTitle(String title) {
+    _dreamTitle = title;
+    notifyListeners();
   }
 
   /// **MISE À JOUR DES TAGS**
   /// Sauvegarde les tags sélectionnés pour une catégorie
   void setTagsForCategory(String category, List<String> tags) {
-    tagsByCategory[category] = tags;
+    _tagsByCategory[category] = tags;
     notifyListeners(); // Notifie l'UI du changement
   }
 
   /// **MISE À JOUR DES NOTES**
   /// Sauvegarde le texte d'une note pour une catégorie
   void setNoteForCategory(String category, String note) {
-    noteControllers[category]?.text = note;
+    _notesByCategory[category] = note;
     notifyListeners(); // Notifie l'UI du changement
   }
 
@@ -120,33 +134,31 @@ class DreamWritingViewModel extends ChangeNotifier {
   /// Retourne un Map structuré pour le service de sauvegarde
   Map<String, dynamic> collectData() {
     final data = {
-      'title': titleController.text.trim(), // Titre nettoyé
+      'title': _dreamTitle.trim(), // Titre nettoyé
       // Toutes les notes par catégorie
-      'redactionByCategory': noteControllers.map(
-        (key, controller) => MapEntry(key, controller.text.trim()),
-      ),
+      'redactionByCategory': Map<String, String>.from(_notesByCategory),
       // Tous les tags par catégorie
-      'tagsByCategory': Map<String, List<String>>.from(tagsByCategory),
+      'tagsByCategory': Map<String, List<String>>.from(_tagsByCategory),
     };
 
     // **DEBUG - AFFICHAGE DES DONNÉES COLLECTÉES**
-    print('=== DONNÉES COLLECTÉES POUR SAUVEGARDE ===');
-    print('Titre: ${data['title']}');
-    print('Tags par catégorie:');
+    debugPrint('=== DONNÉES COLLECTÉES POUR SAUVEGARDE ===');
+    debugPrint('Titre: ${data['title']}');
+    debugPrint('Tags par catégorie:');
     for (final entry
         in (data['tagsByCategory'] as Map<String, List<String>>).entries) {
       if (entry.value.isNotEmpty) {
-        print(' - ${entry.key}: ${entry.value}');
+        debugPrint(' - ${entry.key}: ${entry.value}');
       }
     }
-    print('Rédactions par catégorie:');
+    debugPrint('Rédactions par catégorie:');
     for (final entry
         in (data['redactionByCategory'] as Map<String, String>).entries) {
       if (entry.value.isNotEmpty) {
-        print(' - ${entry.key}: ${entry.value}');
+        debugPrint(' - ${entry.key}: ${entry.value}');
       }
     }
-    print('==========================================');
+    debugPrint('==========================================');
 
     return data; // Données prêtes pour la sauvegarde
   }
@@ -154,7 +166,7 @@ class DreamWritingViewModel extends ChangeNotifier {
   /// **NAVIGATION DANS LE CAROUSEL**
   /// Met à jour l'index de la page courante et notifie l'UI
   void setPage(int newPage) {
-    page = newPage;
+    _currentPage = newPage;
     notifyListeners(); // Déclenche la reconstruction des widgets
   }
 }

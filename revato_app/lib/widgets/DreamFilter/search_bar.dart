@@ -72,13 +72,36 @@ class _DreamSearchBarState extends State<DreamSearchBar> {
                       ),
                     Container(
                       margin: const EdgeInsets.only(right: 8),
-                      child: IconButton(
-                        onPressed: () {
-                          // Ouvrir les filtres avancés
-                          widget.onOpenFilters?.call();
-                        },
-                        icon: Icon(Icons.tune, color: Colors.grey[400]),
-                        tooltip: 'Filtres avancés',
+                      child: Stack(
+                        children: [
+                          IconButton(
+                            onPressed: () {
+                              // Ouvrir les filtres avancés
+                              widget.onOpenFilters?.call();
+                            },
+                            icon: Icon(
+                              Icons.tune,
+                              color:
+                                  vm.hasActiveFilters
+                                      ? const Color(0xFF7C3AED)
+                                      : Colors.grey[400],
+                            ),
+                            tooltip: 'Filtres avancés',
+                          ),
+                          if (vm.hasActiveFilters)
+                            Positioned(
+                              top: 8,
+                              right: 8,
+                              child: Container(
+                                width: 8,
+                                height: 8,
+                                decoration: const BoxDecoration(
+                                  color: Colors.red,
+                                  shape: BoxShape.circle,
+                                ),
+                              ),
+                            ),
+                        ],
                       ),
                     ),
                   ],
@@ -96,6 +119,55 @@ class _DreamSearchBarState extends State<DreamSearchBar> {
               ),
             ),
           ),
+
+          // Indicateur de filtres actifs
+          if (vm.selectedTags.isNotEmpty)
+            Container(
+              margin: const EdgeInsets.only(top: 8),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              decoration: BoxDecoration(
+                color: const Color(0xFF7C3AED).withOpacity(0.1),
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(
+                  color: const Color(0xFF7C3AED).withOpacity(0.2),
+                ),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(
+                    Icons.filter_list,
+                    size: 16,
+                    color: Color(0xFF7C3AED),
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    '${vm.selectedTags.length} tag(s) actif(s)',
+                    style: const TextStyle(
+                      color: Color(0xFF7C3AED),
+                      fontSize: 12,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  GestureDetector(
+                    onTap: () => vm.clearFilters(),
+                    child: Container(
+                      padding: const EdgeInsets.all(2),
+                      decoration: const BoxDecoration(
+                        color: Color(0xFF7C3AED),
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(
+                        Icons.close,
+                        size: 12,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
         ],
       ),
     );
