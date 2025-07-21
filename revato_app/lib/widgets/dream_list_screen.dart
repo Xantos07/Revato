@@ -29,7 +29,7 @@ class _DreamListScreenState extends State<DreamListScreen> {
 
   @override
   void dispose() {
-    _filterViewModel.dispose(); // Nettoyer le ViewModel
+    _filterViewModel.dispose();
     super.dispose();
   }
 
@@ -51,7 +51,7 @@ class _DreamListScreenState extends State<DreamListScreen> {
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider.value(
-      value: _filterViewModel, // Utiliser l'instance existante
+      value: _filterViewModel,
       child: Scaffold(
         appBar: AppBar(
           title: const Text(
@@ -73,14 +73,13 @@ class _DreamListScreenState extends State<DreamListScreen> {
             // Search bar for filtering dreams
             DreamSearchBar(
               onOpenFilters: () {
-                // Ici tu ouvres ton panneau, ex:
                 showModalBottomSheet(
                   context: context,
                   isScrollControlled: true,
                   backgroundColor: Colors.transparent,
                   builder:
                       (context) => ChangeNotifierProvider.value(
-                        value: _filterViewModel, // Utiliser la même instance
+                        value: _filterViewModel,
                         child: FilterPanel(),
                       ),
                 ).then((_) {

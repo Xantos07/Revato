@@ -76,7 +76,7 @@ class _DreamWritingCarouselState extends State<DreamWritingCarousel> {
         !_titleController.text.isEmpty) {
       vm.updateTitle(_titleController.text);
     }
-    // Synchroniser le titre (ViewModel → Controller)
+    // Synchroniser le titre (ViewModel -> Controller)
     else if (_titleController.text != vm.dreamTitle &&
         vm.dreamTitle.isNotEmpty) {
       _titleController.text = vm.dreamTitle;
@@ -87,11 +87,11 @@ class _DreamWritingCarouselState extends State<DreamWritingCarousel> {
       final controller = _getNoteController(category.name);
       final vmText = vm.getNoteForCategory(category.name);
 
-      // Controller → ViewModel
+      // Controller -> ViewModel
       if (controller.text != vmText && controller.text.isNotEmpty) {
         vm.setNoteForCategory(category.name, controller.text);
       }
-      // ViewModel → Controller
+      // ViewModel -> Controller
       else if (controller.text != vmText && vmText.isNotEmpty) {
         controller.text = vmText;
       }
