@@ -105,7 +105,7 @@ class _FilterPanelState extends State<FilterPanel>
                 child: TabBarView(
                   controller: _tabController,
                   children: [
-                    buildDateTab(vm),
+                    buildDateTab(context, vm),
                     buildTagsTab(vm),
                     buildContentTab(vm),
                   ],

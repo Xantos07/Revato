@@ -61,6 +61,11 @@ class DreamFilterViewModel extends ChangeNotifier {
   bool get hasActiveFiltersIncludingSearch =>
       _selectedTags.isNotEmpty || _searchText.isNotEmpty;
 
+  DateTime? _filterStartDate;
+  DateTime? _filterEndDate;
+  DateTime? get filterStartDate => _filterStartDate;
+  DateTime? get filterEndDate => _filterEndDate;
+
   /// **CHARGEMENT DES CATÉGORIES DE TAGS**
   /// Récupère toutes les catégories disponibles depuis le service
   Future<void> loadTagCategories() async {
@@ -203,5 +208,11 @@ class DreamFilterViewModel extends ChangeNotifier {
 
     debugPrint('=== FIN FILTRAGE ===');
     return filteredDreams;
+  }
+
+  void setFilterPeriod(DateTime? start, DateTime? end) {
+    _filterStartDate = start;
+    _filterEndDate = end;
+    notifyListeners();
   }
 }
