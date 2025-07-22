@@ -115,12 +115,6 @@ class _FilterPanelState extends State<FilterPanel>
               //trier titre
 
               //filtrer par période
-
-              // Bouton pour fermer le panneau
-              ElevatedButton(
-                onPressed: () => Navigator.pop(context),
-                child: const Text('Fermer'),
-              ),
             ],
           ),
         );

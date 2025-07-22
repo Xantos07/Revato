@@ -69,52 +69,114 @@ Widget buildDateTab(BuildContext context, DreamFilterViewModel vm) {
       ),
       SizedBox(height: 12),
       Center(
-        child: GestureDetector(
-          onTap: () async {
-            final picked = await showDateRangePicker(
-              context: context,
-              firstDate: DateTime(2000),
-              lastDate: DateTime.now().add(Duration(days: 365)),
-              initialDateRange:
-                  (start != null && end != null)
-                      ? DateTimeRange(start: start, end: end)
-                      : null,
-            );
-            if (picked != null) {
-              vm.setFilterPeriod(picked.start, picked.end);
-            }
-          },
+        child: Container(
+          constraints: const BoxConstraints(maxWidth: 300),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+          decoration: BoxDecoration(
+            color: Color.fromARGB(255, 255, 228, 228).withOpacity(0.06),
+            borderRadius: BorderRadius.circular(18),
+            border: Border.all(
+              color: Color.fromARGB(255, 255, 255, 255).withOpacity(0.18),
+              width: 1.2,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Color(0xFF7C3AED).withOpacity(0.07),
+                blurRadius: 8,
+                offset: Offset(0, 2),
+              ),
+            ],
+          ),
           child: Row(
-            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(Icons.calendar_today, color: Color(0xFF7C3AED)),
+              // Sélecteur date de début
+              Expanded(
+                child: ElevatedButton.icon(
+                  onPressed: () async {
+                    final picked = await showDatePicker(
+                      context: context,
+                      initialDate: start ?? DateTime.now(),
+                      firstDate: DateTime(2000),
+                      lastDate: end ?? DateTime.now().add(Duration(days: 365)),
+                    );
+                    if (picked != null) {
+                      vm.setFilterPeriod(picked, end);
+                    }
+                  },
+                  icon: Icon(Icons.calendar_today, color: Color(0xFF7C3AED)),
+                  label: Text(
+                    start != null
+                        ? 'Du: ${_formatDate(start)}'
+                        : 'Choisir début',
+                    style: TextStyle(color: Color(0xFF7C3AED)),
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Color(0xFF7C3AED).withOpacity(0.08),
+                    elevation: 0,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                ),
+              ),
               SizedBox(width: 12),
-              Text(
-                'Sélectionner une période',
-                style: TextStyle(
-                  fontSize: 16,
-                  color: Color(0xFF7C3AED),
-                  fontWeight: FontWeight.w600,
+              // Sélecteur date de fin
+              Expanded(
+                child: ElevatedButton.icon(
+                  onPressed: () async {
+                    final picked = await showDatePicker(
+                      context: context,
+                      initialDate: end ?? DateTime.now(),
+                      firstDate: start ?? DateTime(2000),
+                      lastDate: DateTime.now().add(Duration(days: 365)),
+                    );
+                    if (picked != null) {
+                      vm.setFilterPeriod(start, picked);
+                    }
+                  },
+                  icon: Icon(Icons.calendar_today, color: Color(0xFF7C3AED)),
+                  label: Text(
+                    end != null ? 'Au: ${_formatDate(end)}' : 'Choisir fin',
+                    style: TextStyle(color: Color(0xFF7C3AED)),
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Color(0xFF7C3AED).withOpacity(0.08),
+                    elevation: 0,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
                 ),
               ),
             ],
           ),
         ),
       ),
-      if (start != null && end != null)
-        Padding(
-          padding: const EdgeInsets.only(top: 10),
-          child: Center(
-            child: Text(
-              'Du ${_formatDate(start)} au ${_formatDate(end)}',
-              style: TextStyle(
-                fontSize: 15,
-                color: Colors.black87,
-                fontWeight: FontWeight.w500,
+
+      if (vm.filterStartDate != null || vm.filterEndDate != null) ...[
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            TextButton.icon(
+              onPressed: () {
+                vm.setFilterPeriod(null, null);
+              },
+              icon: Icon(Icons.clear, color: Color(0xFF7C3AED)),
+              label: Text(
+                'Réinitialiser la période',
+                style: TextStyle(
+                  fontSize: 14,
+                  color: Color(0xFF7C3AED),
+                  fontWeight: FontWeight.w500,
+                ),
               ),
+              style: TextButton.styleFrom(foregroundColor: Color(0xFF7C3AED)),
             ),
-          ),
+          ],
         ),
+      ],
+      SizedBox(height: 24),
     ],
   );
 }

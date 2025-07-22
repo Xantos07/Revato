@@ -57,7 +57,11 @@ class DreamFilterViewModel extends ChangeNotifier {
   bool get isSortedByDate => _isSortedByDate;
 
   // **PROPRIÉTÉS CALCULÉES - LOGIQUE DE PRÉSENTATION**
-  bool get hasActiveFilters => _selectedTags.isNotEmpty;
+  bool get hasActiveFilters =>
+      _selectedTags.isNotEmpty ||
+      _filterEndDate != null ||
+      _filterStartDate != null;
+
   bool get hasActiveFiltersIncludingSearch =>
       _selectedTags.isNotEmpty || _searchText.isNotEmpty;
 
@@ -133,9 +137,17 @@ class DreamFilterViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// **MÉTHODE POUR RÉINITIALISER TOUS LES DATES**
+  void clearDates() {
+    _filterStartDate = null;
+    _filterEndDate = null;
+    notifyListeners();
+  }
+
   /// **MÉTHODE POUR RÉINITIALISER TOUS LES FILTRES ET ÉTATS**
   void clearAll() {
     clearFilters();
+    clearDates();
     _isSortedByDate = true;
     notifyListeners();
   }
@@ -152,7 +164,7 @@ class DreamFilterViewModel extends ChangeNotifier {
   }
 
   /// **FILTRAGE DES RÊVES SELON LES CRITÈRES SÉLECTIONNÉS**
-  /// Applique tous les filtres actifs (recherche + tags)
+  /// Applique tous les filtres actifs (recherche + tags + dates)
   List<Dream> filterDreams(List<Dream> dreams) {
     var filteredDreams = dreams;
 
@@ -160,6 +172,8 @@ class DreamFilterViewModel extends ChangeNotifier {
     debugPrint('Nombre de rêves total: ${dreams.length}');
     debugPrint('Texte de recherche: "$_searchText"');
     debugPrint('Tags sélectionnés: $_selectedTags');
+    debugPrint('Date de début: ${_filterStartDate?.toString()}');
+    debugPrint('Date de fin: ${_filterEndDate?.toString()}');
 
     // Filtrage par texte de recherche (titre)
     if (_searchText.isNotEmpty) {
@@ -206,7 +220,36 @@ class DreamFilterViewModel extends ChangeNotifier {
       debugPrint('Après filtrage tags: ${filteredDreams.length} rêves');
     }
 
+    if (_filterStartDate != null || _filterEndDate != null) {
+      debugPrint('--- DÉBUT FILTRAGE PAR DATE ---');
+      filteredDreams =
+          filteredDreams.where((dream) {
+            final createdAt = dream.createdAt;
+            final isAfterStart =
+                _filterStartDate == null ||
+                createdAt.isAfter(_filterStartDate!);
+            final isBeforeEnd =
+                _filterEndDate == null || createdAt.isBefore(_filterEndDate!);
+
+            debugPrint(
+              'Rêve "${dream.title}" - Date: $createdAt, '
+              'Après début: $isAfterStart, Avant fin: $isBeforeEnd',
+            );
+
+            return isAfterStart && isBeforeEnd;
+          }).toList();
+      debugPrint('--- FIN FILTRAGE PAR DATE ---');
+      debugPrint('Après filtrage date: ${filteredDreams.length} rêves');
+    }
+
     debugPrint('=== FIN FILTRAGE ===');
+
+    filteredDreams.sort(
+      (a, b) =>
+          isSortedByDate
+              ? b.createdAt.compareTo(a.createdAt)
+              : a.createdAt.compareTo(b.createdAt),
+    );
     return filteredDreams;
   }
 
