@@ -50,7 +50,7 @@ class DreamService {
       INNER JOIN tag_categories ON tags.category_id = tag_categories.id
       WHERE dream_tags.dream_id = ?
     ''',
-        [dream.id], // Paramètre sécurisé pour éviter les injections SQL
+        [dream.id],
       );
 
       // Transformation des données brutes en objets Tag
@@ -92,14 +92,12 @@ class DreamService {
                   'id': r['id'],
                   'content': r['content'] as String? ?? '',
                   'category_name': r['category_name'] as String? ?? '',
-                  'display_name':
-                      r['display_name'] as String? ??
-                      '', // Ajout du displayName
+                  'display_name': r['display_name'] as String? ?? '',
                 }),
               )
               .toList();
 
-      // **DEBUG - AFFICHAGE FINAL** (à supprimer en production)
+      // **DEBUG - AFFICHAGE FINAL**
       print('Dream ${dream.id}: ${dream.title}');
       print('Tags récupérés: ${dream.tags.map((t) => t.name).toList()}');
       print(
@@ -259,5 +257,52 @@ class DreamService {
         ),
       ),
     );
+  }
+
+  /// **RÉCUPÉRATION DE TOUS LES TAGS DISPONIBLES**
+  /// Retourne une liste plate de tous les tags, toutes catégories confondues
+  Future<List<String>> getAllAvailableTags() async {
+    final categories = await getAllTagCategories();
+    final List<String> allTags = [];
+
+    for (final category in categories) {
+      final tagsInCategory = await getTagsForCategory(category.name);
+      allTags.addAll(tagsInCategory);
+    }
+
+    return allTags;
+  }
+
+  /// **RÉCUPÉRATION DES TAGS AVEC LEURS CATÉGORIES**
+  /// Retourne un Map associant chaque tag à sa catégorie
+  Future<Map<String, String>> getTagsWithCategories() async {
+    final categories = await getAllTagCategories();
+    final Map<String, String> tagToCategory = {};
+
+    for (final category in categories) {
+      final tagsInCategory = await getTagsForCategory(category.name);
+      for (final tag in tagsInCategory) {
+        tagToCategory[tag] = category.name;
+      }
+    }
+
+    return tagToCategory;
+  }
+
+  /// **RECHERCHE DE TAGS PAR TEXTE**
+  /// Filtre les tags disponibles selon un texte de recherche
+  Future<List<String>> searchTags(String searchText) async {
+    if (searchText.isEmpty) return [];
+
+    final allTags = await getAllAvailableTags();
+    return allTags
+        .where((tag) => tag.toLowerCase().contains(searchText.toLowerCase()))
+        .toList();
+  }
+
+  /// **RÉCUPÉRATION DES CATÉGORIES POPULAIRES**
+  /// Retourne les catégories les plus utilisées
+  Future<List<TagCategory>> getPopularCategories() async {
+    return await getAllTagCategories();
   }
 }

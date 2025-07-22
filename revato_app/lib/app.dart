@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:revato_app/viewmodel/dream_filter_view_model.dart';
 import 'package:revato_app/services/dream_service.dart';
 import 'package:revato_app/widgets/dream_list_screen.dart';
 import 'package:revato_app/database/database.dart';
@@ -60,27 +62,31 @@ class _DreamHomeScreenState extends State<DreamHomeScreen> {
   @override
   Widget build(BuildContext context) {
     final List<Widget> pages = [DreamWritingScreen(), DreamListScreen()];
-
-    return Scaffold(
-      body: pages[_selectedIndex],
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _selectedIndex,
-        onTap: (index) => setState(() => _selectedIndex = index),
-        items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.edit), label: 'Rédiger'),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.list_alt),
-            label: 'Mes rêves',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.analytics),
-            label: 'Analyses',
-          ),
-        ],
-        selectedItemColor: Color(0xFF7C3AED),
-        unselectedItemColor: Colors.grey,
-        backgroundColor: Colors.white,
-        type: BottomNavigationBarType.fixed,
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => DreamFilterViewModel()),
+      ],
+      child: Scaffold(
+        body: pages[_selectedIndex],
+        bottomNavigationBar: BottomNavigationBar(
+          currentIndex: _selectedIndex,
+          onTap: (index) => setState(() => _selectedIndex = index),
+          items: const [
+            BottomNavigationBarItem(icon: Icon(Icons.edit), label: 'Rédiger'),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.list_alt),
+              label: 'Mes rêves',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.analytics),
+              label: 'Analyses',
+            ),
+          ],
+          selectedItemColor: Color(0xFF7C3AED),
+          unselectedItemColor: Colors.grey,
+          backgroundColor: Colors.white,
+          type: BottomNavigationBarType.fixed,
+        ),
       ),
     );
   }
