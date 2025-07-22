@@ -9,6 +9,16 @@ class Dreamdetail extends StatelessWidget {
 
   const Dreamdetail({required this.dream, Key? key}) : super(key: key);
 
+  void _editDream() {
+    // Logique pour éditer le rêve
+    debugPrint('Édition du rêve: ${dream.title}');
+  }
+
+  void _deleteDream() {
+    // Logique pour supprimer le rêve
+    debugPrint('Suppression du rêve: ${dream.title}');
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -84,6 +94,41 @@ class Dreamdetail extends StatelessWidget {
               const SizedBox(height: 8),
               DreamChipsRow(dream),
             ],
+
+            // Ajouter en bas de l'écran de détail
+            const SizedBox(height: 34),
+
+            Container(
+              margin: const EdgeInsets.symmetric(vertical: 16),
+              height: 1,
+              color: const Color.fromARGB(255, 0, 0, 0),
+            ),
+
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                ElevatedButton.icon(
+                  onPressed: () => _editDream(),
+                  icon: Icon(Icons.edit, color: Colors.white),
+                  label: Text(
+                    'Modifier',
+                    style: TextStyle(color: Colors.white),
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color.fromARGB(255, 58, 136, 237),
+                  ),
+                ),
+                ElevatedButton.icon(
+                  onPressed: () => _deleteDream(),
+                  icon: Icon(Icons.delete, color: Colors.white),
+                  label: Text(
+                    'Supprimer',
+                    style: TextStyle(color: Colors.white),
+                  ),
+                  style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+                ),
+              ],
+            ),
           ],
         ),
       ),
