@@ -1,6 +1,7 @@
 // Imports nécessaires pour la gestion d'état et l'accès aux données
 import 'package:flutter/foundation.dart'; // Pour ChangeNotifier
 import 'package:flutter/material.dart'; // Pour TextEditingController
+import 'package:revato_app/model/dream_model.dart';
 import 'package:revato_app/model/redaction_model.dart';
 import 'package:revato_app/model/tag_model.dart';
 import 'package:revato_app/services/dream_service.dart';
@@ -118,7 +119,10 @@ class DreamWritingViewModel extends ChangeNotifier {
   /// **MISE À JOUR DES TAGS**
   /// Sauvegarde les tags sélectionnés pour une catégorie
   void setTagsForCategory(String category, List<String> tags) {
-    _tagsByCategory[category] = tags;
+    debugPrint('setTagsForCategory appelée: $category -> $tags');
+    _tagsByCategory[category] = List<String>.from(tags); // Copie explicite
+    debugPrint('TagsByCategory global: $_tagsByCategory');
+    debugPrint('Tags après mise à jour: ${_tagsByCategory[category]}');
     notifyListeners(); // Notifie l'UI du changement
   }
 
@@ -168,5 +172,72 @@ class DreamWritingViewModel extends ChangeNotifier {
   void setPage(int newPage) {
     _currentPage = newPage;
     notifyListeners(); // Déclenche la reconstruction des widgets
+  }
+
+  void initializeWithDream(Dream dream) {
+    _dreamTitle = dream.title;
+
+    // Construire les notes par catégorie à partir des rédactions du rêve
+    for (final category in _availableCategoriesRedaction) {
+      try {
+        final redaction = dream.redactions.firstWhere(
+          (r) => r.categoryName == category.name,
+        );
+        _notesByCategory[category.name] = redaction.content;
+      } catch (e) {
+        _notesByCategory[category.name] = '';
+      }
+    }
+
+    // Construire les tags par catégorie à partir des tags du rêve
+    for (final category in _availableCategories) {
+      final tagsForCategory =
+          dream.tags
+              .where((t) => t.categoryName == category.name)
+              .map((t) => t.name)
+              .toList();
+      _tagsByCategory[category.name] = tagsForCategory;
+    }
+
+    notifyListeners();
+  }
+
+  /// **GESTION DES TAGS - LOGIQUE MÉTIER**
+
+  /// Renomme un tag globalement dans tous les rêves
+  Future<bool> renameTagGlobally(String oldName, String newName) async {
+    try {
+      final success = await _dreamService.renameTagGlobally(oldName, newName);
+      if (success) {
+        // Mettre à jour localement si le tag est présent
+        for (final category in _tagsByCategory.keys) {
+          final tags = _tagsByCategory[category] ?? [];
+          final updatedTags =
+              tags.map((tag) => tag == oldName ? newName : tag).toList();
+          _tagsByCategory[category] = updatedTags;
+        }
+        notifyListeners();
+      }
+      return success;
+    } catch (e) {
+      debugPrint('Erreur lors du renommage global du tag: $e');
+      return false;
+    }
+  }
+
+  /// Met à jour les tags pour une catégorie donnée
+  void updateTagsForCategory(String categoryName, List<String> newTags) {
+    _tagsByCategory[categoryName] = newTags;
+    notifyListeners();
+  }
+
+  /// Récupère tous les tags existants pour l'autocomplétion
+  Future<List<String>> getAllAvailableTags() async {
+    try {
+      return await _dreamService.getAllAvailableTags();
+    } catch (e) {
+      debugPrint('Erreur lors de la récupération des tags: $e');
+      return [];
+    }
   }
 }

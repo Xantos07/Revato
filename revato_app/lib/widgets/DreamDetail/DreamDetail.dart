@@ -1,17 +1,31 @@
 import 'package:flutter/material.dart';
 import 'package:revato_app/model/dream_model.dart';
-import 'package:revato_app/model/redaction_individual_model.dart';
+import 'package:revato_app/services/dream_service.dart';
 import 'package:revato_app/widgets/DreamList/DreamChipsRow.dart';
 import 'package:revato_app/widgets/Utils.dart';
+import 'package:revato_app/widgets/dream_writing_carousel.dart';
 
 class Dreamdetail extends StatelessWidget {
   final Dream dream;
 
   const Dreamdetail({required this.dream, Key? key}) : super(key: key);
 
-  void _editDream() {
+  void _editDream(BuildContext context) {
     // Logique pour éditer le rêve
     debugPrint('Édition du rêve: ${dream.title}');
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder:
+            (_) => DreamWritingCarousel(
+              initialDream: dream,
+              onSubmit: (data) async {
+                await DreamService().UpdateDreamWithData(dream.id, data);
+                Navigator.pop(context);
+              },
+            ),
+      ),
+    );
   }
 
   void _deleteDream() {
@@ -108,7 +122,7 @@ class Dreamdetail extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
                 ElevatedButton.icon(
-                  onPressed: () => _editDream(),
+                  onPressed: () => _editDream(context),
                   icon: Icon(Icons.edit, color: Colors.white),
                   label: Text(
                     'Modifier',
