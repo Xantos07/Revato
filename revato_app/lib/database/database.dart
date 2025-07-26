@@ -53,7 +53,7 @@ class AppDatabase {
     await db.execute('''
         CREATE TABLE dreams (
           id INTEGER PRIMARY KEY AUTOINCREMENT, 
-          title TEXT NOT NULL,                   
+          title TEXT NOT NULL UNIQUE,                   
           created_at TEXT NOT NULL,              
           updated_at TEXT                        
         )

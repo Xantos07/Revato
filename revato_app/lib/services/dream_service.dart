@@ -198,6 +198,167 @@ class DreamService {
     }
   }
 
+  Future<void> UpdateDreamWithData(
+    int dreamId,
+    Map<String, dynamic> data,
+  ) async {
+    final db = await AppDatabase().database;
+
+    // 1. Mettre à jour le rêve
+    await db.update(
+      'dreams',
+      {'title': data['title'], 'updated_at': DateTime.now().toIso8601String()},
+      where: 'id = ?',
+      whereArgs: [dreamId],
+    );
+
+    // 2. Mettre à jour les tags et liaisons
+    final tagsByCategory = data['tagsByCategory'] as Map<String, List<String>>;
+    for (final entry in tagsByCategory.entries) {
+      final categoryName = entry.key;
+      final tags = entry.value;
+      // Récupérer l'id de la catégorie
+      final categoryResult = await db.query(
+        'tag_categories',
+        where: 'name = ?',
+        whereArgs: [categoryName],
+        limit: 1,
+      );
+      if (categoryResult.isEmpty) continue;
+      final categoryId = categoryResult.first['id'];
+
+      // Supprimer les anciennes liaisons pour cette catégorie
+      await db.delete(
+        'dream_tags',
+        where:
+            'dream_id = ? AND tag_id IN (SELECT id FROM tags WHERE category_id = ?)',
+        whereArgs: [dreamId, categoryId],
+      );
+
+      for (final tag in tags) {
+        // Vérifier si le tag existe déjà
+        final existingTag = await db.query(
+          'tags',
+          where: 'name = ? AND category_id = ?',
+          whereArgs: [tag, categoryId],
+          limit: 1,
+        );
+
+        int tagId;
+        if (existingTag.isNotEmpty) {
+          // Tag existant, récupérer son ID
+          tagId = existingTag.first['id'] as int;
+        } else {
+          // Tag nouveau, l'insérer
+          tagId = await db.insert('tags', {
+            'name': tag,
+            'category_id': categoryId,
+            'created_at': DateTime.now().toIso8601String(),
+          });
+        }
+
+        // Insérer la liaison rêve-tag
+        await db.insert('dream_tags', {
+          'dream_id': dreamId,
+          'tag_id': tagId,
+          'created_at': DateTime.now().toIso8601String(),
+        }, conflictAlgorithm: ConflictAlgorithm.ignore);
+      }
+    }
+    // 3. Mettre à jour les rédactions et liaisons
+    final redactionsByCategory =
+        data['redactionByCategory'] as Map<String, String>;
+    for (final entry in redactionsByCategory.entries) {
+      final categoryName = entry.key;
+      final content = entry.value;
+      if (content.isEmpty) continue;
+      // Récupérer l'id de la catégorie de rédaction
+      final categoryResult = await db.query(
+        'redaction_categories',
+        where: 'name = ?',
+        whereArgs: [categoryName],
+        limit: 1,
+      );
+      if (categoryResult.isEmpty) continue;
+      final categoryId = categoryResult.first['id'];
+      // Supprimer les anciennes liaisons pour cette catégorie
+      await db.delete(
+        'dream_redactions',
+        where:
+            'dream_id = ? AND redaction_id IN (SELECT id FROM redactions WHERE category_id = ?)',
+        whereArgs: [dreamId, categoryId],
+      );
+
+      // Insérer la rédaction
+      final redactionId = await db.insert('redactions', {
+        'content': content,
+        'category_id': categoryId,
+        'created_at': DateTime.now().toIso8601String(),
+      });
+      // Insérer la liaison rêve-rédaction
+      await db.insert('dream_redactions', {
+        'dream_id': dreamId,
+        'redaction_id': redactionId,
+        'created_at': DateTime.now().toIso8601String(),
+      });
+    }
+  }
+
+  /// Renomme un tag dans une catégorie (corrige l'orthographe partout)
+  Future<void> renameTag(
+    String oldName,
+    String newName,
+    String categoryName,
+  ) async {
+    final db = await AppDatabase().database;
+    // Récupérer l'id de la catégorie
+    final categoryResult = await db.query(
+      'tag_categories',
+      where: 'name = ?',
+      whereArgs: [categoryName],
+      limit: 1,
+    );
+    if (categoryResult.isEmpty) return;
+    final categoryId = categoryResult.first['id'];
+
+    // Vérifier si le nouveau nom existe déjà dans cette catégorie
+    final existing = await db.query(
+      'tags',
+      where: 'name = ? AND category_id = ?',
+      whereArgs: [newName, categoryId],
+      limit: 1,
+    );
+    if (existing.isNotEmpty) {
+      // Si le tag existe déjà, il faut relier tous les rêves de l'ancien tag vers le nouveau, puis supprimer l'ancien tag
+      final newTagId = existing.first['id'];
+      final oldTagRows = await db.query(
+        'tags',
+        where: 'name = ? AND category_id = ?',
+        whereArgs: [oldName, categoryId],
+        limit: 1,
+      );
+      if (oldTagRows.isEmpty) return;
+      final oldTagId = oldTagRows.first['id'];
+      // Mettre à jour toutes les liaisons dream_tags
+      await db.update(
+        'dream_tags',
+        {'tag_id': newTagId},
+        where: 'tag_id = ?',
+        whereArgs: [oldTagId],
+      );
+      // Supprimer l'ancien tag
+      await db.delete('tags', where: 'id = ?', whereArgs: [oldTagId]);
+    } else {
+      // Sinon, on peut simplement renommer le tag
+      await db.update(
+        'tags',
+        {'name': newName},
+        where: 'name = ? AND category_id = ?',
+        whereArgs: [oldName, categoryId],
+      );
+    }
+  }
+
   // Méthodes pour récupérer les catégories et tags
   Future<List<String>> getTagsForCategory(String categoryName) async {
     final db = await AppDatabase().database;
@@ -304,5 +465,49 @@ class DreamService {
   /// Retourne les catégories les plus utilisées
   Future<List<TagCategory>> getPopularCategories() async {
     return await getAllTagCategories();
+  }
+
+  /// **RÉCUPÉRATION DE LA CATÉGORIE D'UN TAG**
+  /// Retourne la catégorie d'un tag donné
+  Future<String?> getTagCategory(String tagName) async {
+    final db = await AppDatabase().database;
+    final result = await db.rawQuery(
+      '''
+      SELECT tc.name as category_name
+      FROM tags t
+      JOIN tag_categories tc ON t.category_id = tc.id
+      WHERE t.name = ?
+      LIMIT 1
+    ''',
+      [tagName],
+    );
+
+    if (result.isNotEmpty) {
+      return result.first['category_name'] as String;
+    }
+    return null;
+  }
+
+  /// **RENOMMAGE GLOBAL D'UN TAG**
+  /// Renomme un tag dans tous les rêves où il apparaît
+  Future<bool> renameTagGlobally(String oldName, String newName) async {
+    try {
+      // Récupérer la catégorie du tag
+      final category = await getTagCategory(oldName);
+      if (category == null) {
+        print('Tag "$oldName" not found in any category');
+        return false;
+      }
+
+      // Renommer le tag globalement
+      await renameTag(oldName, newName, category);
+      print(
+        'Tag renamed globally: "$oldName" -> "$newName" in category "$category"',
+      );
+      return true;
+    } catch (e) {
+      print('Error renaming tag globally: $e');
+      return false;
+    }
   }
 }

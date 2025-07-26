@@ -1,13 +1,37 @@
 import 'package:flutter/material.dart';
 import 'package:revato_app/model/dream_model.dart';
-import 'package:revato_app/model/redaction_individual_model.dart';
+import 'package:revato_app/services/dream_service.dart';
 import 'package:revato_app/widgets/DreamList/DreamChipsRow.dart';
 import 'package:revato_app/widgets/Utils.dart';
+import 'package:revato_app/widgets/dream_writing_carousel.dart';
 
 class Dreamdetail extends StatelessWidget {
   final Dream dream;
 
   const Dreamdetail({required this.dream, Key? key}) : super(key: key);
+
+  void _editDream(BuildContext context) {
+    // Logique pour éditer le rêve
+    debugPrint('Édition du rêve: ${dream.title}');
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder:
+            (_) => DreamWritingCarousel(
+              initialDream: dream,
+              onSubmit: (data) async {
+                await DreamService().UpdateDreamWithData(dream.id, data);
+                Navigator.pop(context);
+              },
+            ),
+      ),
+    );
+  }
+
+  void _deleteDream() {
+    // Logique pour supprimer le rêve
+    debugPrint('Suppression du rêve: ${dream.title}');
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -84,6 +108,41 @@ class Dreamdetail extends StatelessWidget {
               const SizedBox(height: 8),
               DreamChipsRow(dream),
             ],
+
+            // Ajouter en bas de l'écran de détail
+            const SizedBox(height: 34),
+
+            Container(
+              margin: const EdgeInsets.symmetric(vertical: 16),
+              height: 1,
+              color: const Color.fromARGB(255, 0, 0, 0),
+            ),
+
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                ElevatedButton.icon(
+                  onPressed: () => _editDream(context),
+                  icon: Icon(Icons.edit, color: Colors.white),
+                  label: Text(
+                    'Modifier',
+                    style: TextStyle(color: Colors.white),
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color.fromARGB(255, 58, 136, 237),
+                  ),
+                ),
+                ElevatedButton.icon(
+                  onPressed: () => _deleteDream(),
+                  icon: Icon(Icons.delete, color: Colors.white),
+                  label: Text(
+                    'Supprimer',
+                    style: TextStyle(color: Colors.white),
+                  ),
+                  style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+                ),
+              ],
+            ),
           ],
         ),
       ),
