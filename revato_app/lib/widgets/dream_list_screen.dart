@@ -55,7 +55,7 @@ class _DreamListScreenState extends State<DreamListScreen> {
       child: Scaffold(
         appBar: AppBar(
           title: const Text(
-            'Mon rêve',
+            'Mes rêves',
             style: TextStyle(
               color: Color(0xFF7C3AED),
               fontWeight: FontWeight.bold,

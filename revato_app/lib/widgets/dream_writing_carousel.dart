@@ -7,17 +7,15 @@ import 'package:revato_app/widgets/Dream_Carousel/DreamCarouselStepper.dart';
 import 'package:revato_app/widgets/Dream_Carousel/DreamNotePage.dart';
 import 'package:revato_app/widgets/Dream_Carousel/DreamTagsPage.dart';
 import 'package:revato_app/widgets/Dream_Carousel/DreamTitlePage.dart';
+import 'package:revato_app/services/dream_service.dart';
+import 'package:revato_app/services/navigation_core.dart';
 
 /// **CAROUSEL PRINCIPAL** - Responsabilité : Structure et navigation
 class DreamWritingCarousel extends StatefulWidget {
   final Dream? initialDream;
-  final void Function(Map<String, dynamic> data) onSubmit;
+  final void Function(Map<String, dynamic> data)? onSubmit;
 
-  const DreamWritingCarousel({
-    super.key,
-    required this.onSubmit,
-    this.initialDream,
-  });
+  const DreamWritingCarousel({super.key, this.onSubmit, this.initialDream});
 
   @override
   State<DreamWritingCarousel> createState() => _DreamWritingCarouselState();
@@ -32,6 +30,34 @@ class _DreamWritingCarouselState extends State<DreamWritingCarousel> {
   void dispose() {
     _dataSynchronizer.dispose();
     super.dispose();
+  }
+
+  /// Gère la soumission avec logique par défaut
+  Future<void> _handleSubmit(Map<String, dynamic> data) async {
+    //edit dream
+    if (widget.onSubmit != null) {
+      // Utilise le callback fourni
+      widget.onSubmit!(data);
+    }
+    // new dream
+    else {
+      // Logique par défaut : sauvegarder et naviguer
+      try {
+        await DreamService().insertDreamWithData(data);
+        if (mounted) {
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(const SnackBar(content: Text('Rêve enregistré !')));
+          NavigationCore().goToDreamListTab();
+        }
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Erreur lors de l\'enregistrement : $e')),
+          );
+        }
+      }
+    }
   }
 
   @override
@@ -82,6 +108,7 @@ class _DreamWritingCarouselState extends State<DreamWritingCarousel> {
     );
   }
 
+  /// Construit l'AppBar en fonction de l'état d'édition sinon rien
   AppBar? _buildAppBar() {
     return widget.initialDream != null
         ? AppBar(
@@ -99,7 +126,21 @@ class _DreamWritingCarouselState extends State<DreamWritingCarousel> {
           centerTitle: true,
           iconTheme: const IconThemeData(color: Color(0xFF7C3AED)),
         )
-        : null;
+        : AppBar(
+          title: const Text(
+            'mon rêve',
+            style: TextStyle(
+              color: Color(0xFF7C3AED),
+              fontWeight: FontWeight.bold,
+              fontSize: 24,
+              letterSpacing: 1.2,
+            ),
+          ),
+          backgroundColor: Colors.white,
+          elevation: 0,
+          centerTitle: true,
+          iconTheme: const IconThemeData(color: Color(0xFF7C3AED)),
+        );
   }
 
   Widget _buildCarouselContent(DreamWritingViewModel vm, List<Widget> pages) {
@@ -148,7 +189,7 @@ class _DreamWritingCarouselState extends State<DreamWritingCarousel> {
         if (vm.currentPage < totalPages - 1) {
           vm.setPage(vm.currentPage + 1);
         } else {
-          widget.onSubmit(vm.collectData());
+          _handleSubmit(vm.collectData());
         }
       },
     );

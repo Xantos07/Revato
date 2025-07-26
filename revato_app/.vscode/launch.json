@@ -1,0 +1,18 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Analyze Code Quality",
+      "type": "dart",
+      "request": "launch",
+      "program": "bin/analyze.dart"
+    },
+    {
+      "name": "Run Tests with Coverage", 
+      "type": "dart",
+      "request": "launch",
+      "program": "test/",
+      "args": ["--coverage"]
+    }
+  ]
+}

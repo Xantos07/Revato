@@ -110,6 +110,19 @@ class DreamWritingViewModel extends ChangeNotifier {
     return _notesByCategory[categoryName] ?? '';
   }
 
+  void GetDreamWithId(int dreamId) async {
+    try {
+      final dream = await _dreamService.getDreamWithTagsAndRedactions(dreamId);
+      if (dream != null) {
+        initializeWithDream(dream);
+      } else {
+        debugPrint('Aucun rêve trouvé avec l\'ID: $dreamId');
+      }
+    } catch (e) {
+      debugPrint('Erreur lors de la récupération du rêve: $e');
+    }
+  }
+
   /// **MISE À JOUR DU TITRE**
   void updateTitle(String title) {
     _dreamTitle = title;
