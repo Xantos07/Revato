@@ -189,6 +189,7 @@ class _DreamTagsInputFieldWithEditingState
       builder: (BuildContext context) {
         return AlertDialog(
           title: const Text('Renommer le tag globalement'),
+          backgroundColor: Colors.white,
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
