@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:revato_app/viewmodel/dream_filter_view_model.dart';
+import 'package:revato_app/widgets/dream_analysis.dart';
 import 'package:revato_app/widgets/dream_list_screen.dart';
 import 'package:revato_app/services/navigation_core.dart';
 import 'widgets/dream_writing_carousel.dart';
@@ -47,7 +48,11 @@ class _DreamHomeScreenState extends State<DreamHomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final List<Widget> pages = [DreamWritingCarousel(), DreamListScreen()];
+    final List<Widget> pages = [
+      DreamWritingCarousel(),
+      DreamListScreen(),
+      DreamAnalysis(),
+    ];
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => DreamFilterViewModel()),
