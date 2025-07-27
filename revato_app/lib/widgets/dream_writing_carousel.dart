@@ -196,6 +196,11 @@ class _DreamWritingCarouselState extends State<DreamWritingCarousel> {
   }
 }
 
+///================================
+/// **INITIALISATION D'ÉDITION**
+/// Responsabilité : Préparation des données
+///=================================
+
 /// **SYNCHRONISATEUR DE DONNÉES** - Responsabilité : Gestion des contrôleurs
 class _DreamDataSynchronizer {
   final TextEditingController _titleController = TextEditingController();

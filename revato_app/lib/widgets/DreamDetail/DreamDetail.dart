@@ -147,14 +147,13 @@ class DreamDetail extends StatelessWidget {
                           ),
                         ),
                         ElevatedButton.icon(
-                          onPressed: () async {
-                            final success = await viewModel.deleteDream(
-                              dream.id,
+                          onPressed: () {
+                            showDialog(
+                              context: context,
+                              builder:
+                                  (context) =>
+                                      _buildDeleteDialog(context, viewModel),
                             );
-                            if (success) {
-                              onDreamUpdated
-                                  ?.call(); // Appelle le callback après suppression réussie
-                            }
                           },
                           icon: Icon(Icons.delete, color: Colors.white),
                           label: Text(
@@ -174,6 +173,67 @@ class DreamDetail extends StatelessWidget {
           },
         ),
       ),
+    );
+  }
+
+  Widget _buildDeleteDialog(context, DreamDetailViewModel viewModel) {
+    bool isDeleting = false;
+    return StatefulBuilder(
+      builder: (context, setState) {
+        return AlertDialog(
+          title: const Text(
+            'Supprimer votre rêve',
+            style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
+          ),
+          backgroundColor: Colors.white,
+          content: const Text.rich(
+            TextSpan(
+              children: [
+                TextSpan(
+                  text: 'Êtes-vous sûr de vouloir supprimer votre rêve ? ',
+                ),
+                TextSpan(
+                  text: '\nCette action est irréversible.',
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.grey[300],
+                foregroundColor: Colors.black,
+              ),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: const Text('Annuler'),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.red,
+                foregroundColor: Colors.white,
+              ),
+              onPressed: () async {
+                if (isDeleting) {
+                  await viewModel.deleteDream(dream.id);
+                  Navigator.of(context).pop();
+                  onDreamUpdated?.call();
+                } else {
+                  setState(() {
+                    isDeleting = true;
+                  });
+                }
+              },
+              child:
+                  isDeleting
+                      ? const Text('Oui je suis sûr')
+                      : const Text('Supprimer'),
+            ),
+          ],
+        );
+      },
     );
   }
 }
