@@ -34,20 +34,23 @@ Widget buildDateTab(BuildContext context, DreamFilterViewModel vm) {
           child: Container(
             padding: EdgeInsets.symmetric(horizontal: 24, vertical: 14),
             decoration: BoxDecoration(
-              color: Color(0xFF7C3AED).withOpacity(0.08),
+              color: Colors.white,
               borderRadius: BorderRadius.circular(32),
-              border: Border.all(color: Color(0xFF7C3AED), width: 1.5),
+              border: Border.all(
+                color: const Color.fromARGB(255, 174, 174, 174),
+                width: 1.5,
+              ),
             ),
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(icon, color: Color(0xFF7C3AED)),
+                Icon(icon, color: Colors.black),
                 SizedBox(width: 12),
                 Text(
                   label,
                   style: TextStyle(
                     fontSize: 16,
-                    color: Color(0xFF7C3AED),
+                    color: Colors.black,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
@@ -81,7 +84,7 @@ Widget buildDateTab(BuildContext context, DreamFilterViewModel vm) {
             ),
             boxShadow: [
               BoxShadow(
-                color: Color(0xFF7C3AED).withOpacity(0.07),
+                color: Color.fromARGB(255, 0, 0, 0).withOpacity(0.07),
                 blurRadius: 8,
                 offset: Offset(0, 2),
               ),
@@ -104,15 +107,23 @@ Widget buildDateTab(BuildContext context, DreamFilterViewModel vm) {
                       vm.setFilterPeriod(picked, end);
                     }
                   },
-                  icon: Icon(Icons.calendar_today, color: Color(0xFF7C3AED)),
+                  icon: Icon(
+                    Icons.calendar_today,
+                    color: Color.fromARGB(255, 0, 0, 0),
+                  ),
                   label: Text(
                     start != null
                         ? 'Du: ${_formatDate(start)}'
                         : 'Choisir début',
-                    style: TextStyle(color: Color(0xFF7C3AED)),
+                    style: TextStyle(color: Color.fromARGB(255, 0, 0, 0)),
                   ),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Color(0xFF7C3AED).withOpacity(0.08),
+                    backgroundColor: Color.fromARGB(
+                      255,
+                      0,
+                      0,
+                      0,
+                    ).withOpacity(0.08),
                     elevation: 0,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
@@ -135,13 +146,21 @@ Widget buildDateTab(BuildContext context, DreamFilterViewModel vm) {
                       vm.setFilterPeriod(start, picked);
                     }
                   },
-                  icon: Icon(Icons.calendar_today, color: Color(0xFF7C3AED)),
+                  icon: Icon(
+                    Icons.calendar_today,
+                    color: Color.fromARGB(255, 0, 0, 0),
+                  ),
                   label: Text(
                     end != null ? 'Au: ${_formatDate(end)}' : 'Choisir fin',
-                    style: TextStyle(color: Color(0xFF7C3AED)),
+                    style: TextStyle(color: Color.fromARGB(255, 0, 0, 0)),
                   ),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Color(0xFF7C3AED).withOpacity(0.08),
+                    backgroundColor: Color.fromARGB(
+                      255,
+                      0,
+                      0,
+                      0,
+                    ).withOpacity(0.08),
                     elevation: 0,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
@@ -162,16 +181,18 @@ Widget buildDateTab(BuildContext context, DreamFilterViewModel vm) {
               onPressed: () {
                 vm.setFilterPeriod(null, null);
               },
-              icon: Icon(Icons.clear, color: Color(0xFF7C3AED)),
+              icon: Icon(Icons.clear, color: Color.fromARGB(255, 0, 0, 0)),
               label: Text(
                 'Réinitialiser la période',
                 style: TextStyle(
                   fontSize: 14,
-                  color: Color(0xFF7C3AED),
+                  color: Color.fromARGB(255, 0, 0, 0),
                   fontWeight: FontWeight.w500,
                 ),
               ),
-              style: TextButton.styleFrom(foregroundColor: Color(0xFF7C3AED)),
+              style: TextButton.styleFrom(
+                foregroundColor: Color.fromARGB(255, 0, 0, 0),
+              ),
             ),
           ],
         ),

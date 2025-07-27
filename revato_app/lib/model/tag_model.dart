@@ -91,6 +91,8 @@ class TagCategory {
     final luminance = color.computeLuminance();
     // Si la couleur est claire (luminance > 0.5) → texte noir
     // Si la couleur est foncée (luminance <= 0.5) → texte blanc
-    return luminance > 0.5 ? Colors.black : Colors.white;
+
+    //return luminance > 0.5 ? Colors.black : .white;Colors
+    return const Color(0xFFFFFFFF); // Blanc pour les couleurs foncées
   }
 }
