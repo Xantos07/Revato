@@ -18,6 +18,13 @@ class DreamDetail extends StatelessWidget {
         builder: (context, viewModel, child) {
           return Scaffold(
             appBar: AppBar(
+              leading: IconButton(
+                icon: const Icon(Icons.arrow_back),
+                onPressed:
+                    () => Navigator.of(
+                      context,
+                    ).pop(true), // <-- force le reload à la DreamList
+              ),
               title: const Text(
                 'Mon rêve',
                 style: TextStyle(
