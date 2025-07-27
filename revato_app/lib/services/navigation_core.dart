@@ -42,15 +42,19 @@ class NavigationCore {
   NavigatorState? get _navigator => navigatorKey.currentState;
 
   /// Naviguer vers les détails d'un rêve
-  void navigateToDreamDetail(Dream dream) {
+  void navigateToDreamDetail(Dream dream, {VoidCallback? onDreamUpdated}) {
     print('Service Navigating to dream detail for: ${dream.title}');
-    _navigator?.push(
-      MaterialPageRoute(builder: (context) => DreamDetail(dream: dream)),
+    _navigator!.push(
+      MaterialPageRoute(
+        builder:
+            (context) =>
+                DreamDetail(dream: dream, onDreamUpdated: onDreamUpdated),
+      ),
     );
   }
 
   /// Naviguer vers l'édition d'un rêve
-  void navigateToEditDream(Dream dream) async {
+  void navigateToEditDream(Dream dream, {VoidCallback? onDreamUpdated}) async {
     final result = await _navigator?.push<Dream>(
       MaterialPageRoute(
         builder:
@@ -74,7 +78,11 @@ class NavigationCore {
     // Si on a bien un rêve modifié, on remplace la page de détail par la nouvelle version
     if (result != null) {
       _navigator?.pushReplacement(
-        MaterialPageRoute(builder: (context) => DreamDetail(dream: result)),
+        MaterialPageRoute(
+          builder:
+              (context) =>
+                  DreamDetail(dream: result, onDreamUpdated: onDreamUpdated),
+        ),
       );
     }
   }

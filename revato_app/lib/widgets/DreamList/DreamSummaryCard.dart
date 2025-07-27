@@ -6,8 +6,10 @@ import 'package:revato_app/widgets/Utils.dart';
 
 class DreamSummaryCard extends StatelessWidget {
   final Dream dream;
+  final VoidCallback? onDreamUpdated;
 
-  DreamSummaryCard({required this.dream, Key? key}) : super(key: key);
+  DreamSummaryCard({required this.dream, this.onDreamUpdated, Key? key})
+    : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -30,8 +32,12 @@ class DreamSummaryCard extends StatelessWidget {
       child: InkWell(
         borderRadius: BorderRadius.circular(16),
         onTap: () {
-          // Navigation vers les détails du rêve
-          NavigationCore().navigateToDreamDetail(dream);
+          print('Ouverture DreamDetail pour: ${dream.title}');
+          // Navigation simple avec callback direct
+          NavigationCore().navigateToDreamDetail(
+            dream,
+            onDreamUpdated: onDreamUpdated,
+          );
         },
         child: Padding(
           padding: const EdgeInsets.all(16),

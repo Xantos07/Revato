@@ -10,6 +10,17 @@ import 'package:revato_app/widgets/DreamList/DreamSummaryCard.dart';
 class DreamListScreen extends StatefulWidget {
   const DreamListScreen({super.key});
 
+  // Clé globale pour accéder à l'état depuis l'extérieur
+  static final GlobalKey<_DreamListScreenState> globalKey =
+      GlobalKey<_DreamListScreenState>();
+
+  // Méthode statique pour recharger depuis n'importe où
+  static void reloadDreams() {
+    print('Tentative de reload depuis méthode statique');
+
+    globalKey.currentState?._loadDreams();
+  }
+
   @override
   State<DreamListScreen> createState() => _DreamListScreenState();
 }
@@ -35,6 +46,8 @@ class _DreamListScreenState extends State<DreamListScreen> {
 
   Future<void> _loadDreams() async {
     try {
+      print('_loadDreams appelée'); // Pour debug
+
       final dreams = await _dreamService.getAllDreamsWithTagsAndRedactions();
       setState(() {
         _allDreams = dreams;
@@ -51,6 +64,8 @@ class _DreamListScreenState extends State<DreamListScreen> {
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider.value(
+      key: DreamListScreen.globalKey,
+
       value: _filterViewModel,
       child: Scaffold(
         appBar: AppBar(
@@ -143,7 +158,15 @@ class _DreamListScreenState extends State<DreamListScreen> {
                             itemCount: filteredDreams.length,
                             itemBuilder: (context, index) {
                               final dream = filteredDreams[index];
-                              return DreamSummaryCard(dream: dream);
+                              return DreamSummaryCard(
+                                dream: dream,
+                                onDreamUpdated: () {
+                                  print(
+                                    'Callback reçu - rechargement des rêves',
+                                  );
+                                  _loadDreams();
+                                },
+                              );
                             },
                           );
                         },
