@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:revato_app/widgets/Dream_Carousel/DreamPageBase.dart';
-import 'dream_tags_input_field_with_editing.dart';
+import 'package:revato_app/widgets/Dream_Carousel/Dreamfields.dart';
 
 /// Page d'édition des tags pour le carousel de rêves
 /// Responsabilité : Affichage et navigation uniquement
@@ -36,7 +36,7 @@ class _DreamTagsPageState extends State<DreamTagsPage> {
     return DreamPageBase(
       title: widget.title,
       small: true,
-      child: DreamTagsInputFieldWithEditing(
+      child: DreamTagsInputField(
         label: widget.label,
         tags: widget.tags,
         onChanged: widget.onChanged,
@@ -44,6 +44,7 @@ class _DreamTagsPageState extends State<DreamTagsPage> {
         chipTextColor: widget.chipTextColor,
         addButtonColor: widget.addButtonColor,
         existingTags: widget.existingTags,
+        allowEditing: true, // Active l'édition pour remplacer WithEditing
       ),
     );
   }

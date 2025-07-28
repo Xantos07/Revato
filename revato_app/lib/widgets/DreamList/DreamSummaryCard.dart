@@ -1,13 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:revato_app/model/dream_model.dart';
-import 'package:revato_app/widgets/DreamDetail/DreamDetail.dart';
+import 'package:revato_app/services/navigation_core.dart';
 import 'package:revato_app/widgets/DreamList/DreamChipsRow.dart';
 import 'package:revato_app/widgets/Utils.dart';
 
 class DreamSummaryCard extends StatelessWidget {
   final Dream dream;
+  final VoidCallback? onDreamUpdated;
 
-  const DreamSummaryCard({required this.dream, Key? key}) : super(key: key);
+  DreamSummaryCard({required this.dream, this.onDreamUpdated, Key? key})
+    : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -30,9 +32,11 @@ class DreamSummaryCard extends StatelessWidget {
       child: InkWell(
         borderRadius: BorderRadius.circular(16),
         onTap: () {
-          // Navigation vers les détails du rêve
-          Navigator.of(context).push(
-            MaterialPageRoute(builder: (context) => Dreamdetail(dream: dream)),
+          print('Ouverture DreamDetail pour: ${dream.title}');
+          // Navigation simple avec callback direct
+          NavigationCore().navigateToDreamDetail(
+            dream,
+            onDreamUpdated: onDreamUpdated,
           );
         },
         child: Padding(

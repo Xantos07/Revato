@@ -30,6 +30,7 @@ class DreamChipsRow extends StatelessWidget {
 
             padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
             materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+            side: BorderSide.none,
           ),
         );
       }

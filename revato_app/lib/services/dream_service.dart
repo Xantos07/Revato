@@ -112,6 +112,69 @@ class DreamService {
     return dreams;
   }
 
+  Future<Dream?> getDreamWithTagsAndRedactions(int dreamId) async {
+    final db = await AppDatabase().database;
+
+    // 1. Récupérer le rêve
+    final results = await db.query(
+      'dreams',
+      where: 'id = ?',
+      whereArgs: [dreamId],
+      limit: 1,
+    );
+    if (results.isEmpty) return null;
+
+    final dream = Dream.fromMap(results.first);
+
+    // 2. Récupérer les tags associés
+    final tagRows = await db.rawQuery(
+      '''
+    SELECT tags.id, tags.name, tag_categories.name as category_name, tag_categories.color as color
+    FROM tags
+    INNER JOIN dream_tags ON tags.id = dream_tags.tag_id
+    INNER JOIN tag_categories ON tags.category_id = tag_categories.id
+    WHERE dream_tags.dream_id = ?
+    ''',
+      [dream.id],
+    );
+    dream.tags =
+        tagRows
+            .map(
+              (tagRow) => Tag.fromMap({
+                'id': tagRow['id'],
+                'name': tagRow['name'] as String? ?? '',
+                'category_name': tagRow['category_name'] as String? ?? '',
+                'color': tagRow['color'] as String? ?? '#FFFFFF',
+              }),
+            )
+            .toList();
+
+    // 3. Récupérer les rédactions associées
+    final redactionRows = await db.rawQuery(
+      '''
+    SELECT redactions.id, redactions.content, redaction_categories.name as category_name, redaction_categories.display_name as display_name
+    FROM redactions
+    INNER JOIN dream_redactions ON redactions.id = dream_redactions.redaction_id
+    INNER JOIN redaction_categories ON redactions.category_id = redaction_categories.id
+    WHERE dream_redactions.dream_id = ?
+    ''',
+      [dream.id],
+    );
+    dream.redactions =
+        redactionRows
+            .map(
+              (r) => Redaction.fromMap({
+                'id': r['id'],
+                'content': r['content'] as String? ?? '',
+                'category_name': r['category_name'] as String? ?? '',
+                'display_name': r['display_name'] as String? ?? '',
+              }),
+            )
+            .toList();
+
+    return dream;
+  }
+
   ///=========== FUNCTIONS =============== ///
 
   /// Insère un rêve avec ses données associées
@@ -507,6 +570,34 @@ class DreamService {
       return true;
     } catch (e) {
       print('Error renaming tag globally: $e');
+      return false;
+    }
+  }
+
+  Future<bool> deleteDream(int dreamId) async {
+    try {
+      final db = await AppDatabase().database;
+
+      // Supprimer les liaisons rêve-tag
+      await db.delete(
+        'dream_tags',
+        where: 'dream_id = ?',
+        whereArgs: [dreamId],
+      );
+
+      // Supprimer les liaisons rêve-rédaction
+      await db.delete(
+        'dream_redactions',
+        where: 'dream_id = ?',
+        whereArgs: [dreamId],
+      );
+
+      // Supprimer le rêve lui-même
+      await db.delete('dreams', where: 'id = ?', whereArgs: [dreamId]);
+
+      return true;
+    } catch (e) {
+      print('Erreur lors de la suppression du rêve: $e');
       return false;
     }
   }

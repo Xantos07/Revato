@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:revato_app/widgets/Dream_Carousel/DreamFields.dart';
+import 'Dreamfields.dart';
 import 'package:revato_app/widgets/Dream_Carousel/DreamPageBase.dart';
 
 class DreamNotePage extends StatelessWidget {
