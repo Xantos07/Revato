@@ -9,11 +9,7 @@ Widget buildContentTab(DreamFilterViewModel vm) {
       children: [
         Text(
           'Recherche textuelle',
-          style: TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-            color: Color(0xFF7C3AED),
-          ),
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
         ),
         SizedBox(height: 12),
         Text(

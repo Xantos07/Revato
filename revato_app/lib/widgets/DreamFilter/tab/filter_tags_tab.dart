@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:revato_app/viewmodel/dream_filter_view_model.dart';
 
-Widget buildTagsTab(DreamFilterViewModel vm) {
+Widget buildTagsTab(BuildContext context, DreamFilterViewModel vm) {
   if (vm.isLoadingCategories) {
     return const Center(
       child: Padding(
@@ -41,34 +41,21 @@ Widget buildTagsTab(DreamFilterViewModel vm) {
             margin: const EdgeInsets.only(bottom: 16),
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             decoration: BoxDecoration(
-              color: const Color(0xFF7C3AED).withOpacity(0.1),
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(
-                color: const Color(0xFF7C3AED).withOpacity(0.2),
-              ),
+              border: Border.all(color: Theme.of(context).colorScheme.primary),
             ),
             child: Row(
               children: [
-                const Icon(
-                  Icons.filter_list,
-                  color: Color(0xFF7C3AED),
-                  size: 20,
-                ),
+                const Icon(Icons.filter_list, size: 20),
                 const SizedBox(width: 8),
                 Text(
                   '${vm.selectedTags.length} tag(s) sélectionné(s)',
-                  style: const TextStyle(
-                    color: Color(0xFF7C3AED),
-                    fontWeight: FontWeight.w500,
-                  ),
+                  style: const TextStyle(fontWeight: FontWeight.w500),
                 ),
                 const Spacer(),
                 TextButton(
                   onPressed: vm.clearFilters,
-                  child: const Text(
-                    'Effacer',
-                    style: TextStyle(color: Color(0xFF7C3AED)),
-                  ),
+                  child: const Text('Effacer'),
                 ),
               ],
             ),
@@ -76,7 +63,7 @@ Widget buildTagsTab(DreamFilterViewModel vm) {
 
         // Liste des catégories avec ExpansionTiles
         ...vm.availableTagCategories.map(
-          (category) => _buildCategoryExpansionTile(vm, category),
+          (category) => _buildCategoryExpansionTile(context, vm, category),
         ),
       ],
     ),
@@ -84,7 +71,11 @@ Widget buildTagsTab(DreamFilterViewModel vm) {
 }
 
 /// **CONSTRUCTION D'UNE CATÉGORIE AVEC LISTE DÉROULANTE**
-Widget _buildCategoryExpansionTile(DreamFilterViewModel vm, category) {
+Widget _buildCategoryExpansionTile(
+  BuildContext context,
+  DreamFilterViewModel vm,
+  category,
+) {
   final tags = vm.getTagsForCategory(category.name);
   final selectedCount = vm.getSelectedTagsCountForCategory(category.name);
 
@@ -96,7 +87,7 @@ Widget _buildCategoryExpansionTile(DreamFilterViewModel vm, category) {
     margin: const EdgeInsets.only(bottom: 8),
     decoration: BoxDecoration(
       borderRadius: BorderRadius.circular(12),
-      border: Border.all(color: Colors.grey.shade200),
+      border: Border.all(color: Theme.of(context).colorScheme.outline),
     ),
     child: ExpansionTile(
       title: Row(
@@ -134,7 +125,7 @@ Widget _buildCategoryExpansionTile(DreamFilterViewModel vm, category) {
                     '$selectedCount sélectionné(s)',
                     style: TextStyle(
                       fontSize: 12,
-                      color: const Color(0xFF7C3AED).withOpacity(0.7),
+                      color: Theme.of(context).colorScheme.primary,
                     ),
                   ),
               ],
@@ -145,14 +136,14 @@ Widget _buildCategoryExpansionTile(DreamFilterViewModel vm, category) {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
             decoration: BoxDecoration(
-              color: Colors.grey.shade100,
+              color: Theme.of(context).colorScheme.surfaceVariant,
               borderRadius: BorderRadius.circular(12),
             ),
             child: Text(
               '${tags.length}',
               style: TextStyle(
                 fontSize: 12,
-                color: Colors.grey.shade600,
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
                 fontWeight: FontWeight.w500,
               ),
             ),
@@ -165,7 +156,8 @@ Widget _buildCategoryExpansionTile(DreamFilterViewModel vm, category) {
           child: Wrap(
             spacing: 8,
             runSpacing: 8,
-            children: tags.map((tag) => _buildTagChip(vm, tag)).toList(),
+            children:
+                tags.map((tag) => _buildTagChip(context, vm, tag)).toList(),
           ),
         ),
       ],
@@ -174,22 +166,32 @@ Widget _buildCategoryExpansionTile(DreamFilterViewModel vm, category) {
 }
 
 /// **CONSTRUCTION D'UN CHIP DE TAG**
-Widget _buildTagChip(DreamFilterViewModel vm, String tag) {
+Widget _buildTagChip(
+  BuildContext context,
+  DreamFilterViewModel vm,
+  String tag,
+) {
   final isSelected = vm.isTagSelected(tag);
 
   return FilterChip(
     label: Text(tag),
     selected: isSelected,
     onSelected: (selected) => vm.toggleTagFilter(tag),
-    backgroundColor: Colors.grey.shade50,
-    selectedColor: const Color(0xFF7C3AED).withOpacity(0.2),
-    checkmarkColor: const Color(0xFF7C3AED),
+    backgroundColor: Theme.of(context).colorScheme.surface,
+    selectedColor: Theme.of(context).colorScheme.primary.withOpacity(0.2),
+    checkmarkColor: Theme.of(context).colorScheme.primary,
     labelStyle: TextStyle(
-      color: isSelected ? const Color(0xFF7C3AED) : Colors.grey.shade700,
+      color:
+          isSelected
+              ? Theme.of(context).colorScheme.primary
+              : Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
       fontWeight: isSelected ? FontWeight.w500 : FontWeight.normal,
     ),
     side: BorderSide(
-      color: isSelected ? const Color(0xFF7C3AED) : Colors.grey.shade300,
+      color:
+          isSelected
+              ? Theme.of(context).colorScheme.primary
+              : Theme.of(context).colorScheme.outline,
     ),
   );
 }
