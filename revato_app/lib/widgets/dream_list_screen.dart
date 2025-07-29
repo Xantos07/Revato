@@ -72,13 +72,11 @@ class _DreamListScreenState extends State<DreamListScreen> {
           title: const Text(
             'Mes rêves',
             style: TextStyle(
-              color: Color(0xFF7C3AED),
               fontWeight: FontWeight.bold,
               fontSize: 24,
               letterSpacing: 1.2,
             ),
           ),
-          backgroundColor: Colors.white,
           elevation: 0,
           centerTitle: true,
           iconTheme: const IconThemeData(color: Color(0xFF7C3AED)),
@@ -141,12 +139,7 @@ class _DreamListScreenState extends State<DreamListScreen> {
                                   const SizedBox(height: 8),
                                   TextButton(
                                     onPressed: () => vm.clearAll(),
-                                    child: const Text(
-                                      'Effacer les filtres',
-                                      style: TextStyle(
-                                        color: Color(0xFF7C3AED),
-                                      ),
-                                    ),
+                                    child: const Text('Effacer les filtres'),
                                   ),
                                 ],
                               ),

@@ -112,7 +112,7 @@ class AppDatabase {
 
     // **TABLE TAGS INDIVIDUELS**
     // Stocke les tags spécifiques saisis par l'utilisateur
-    await db.execute('''
+    await db.execute(''' 
         CREATE TABLE tags (
           id INTEGER PRIMARY KEY AUTOINCREMENT,
           name TEXT NOT NULL,                    

@@ -15,13 +15,11 @@ class _DreamAnalysisScreenState extends State<DreamAnalysis> {
         title: const Text(
           'Mon analyse de rêve',
           style: TextStyle(
-            color: Color(0xFF7C3AED),
             fontWeight: FontWeight.bold,
             fontSize: 24,
             letterSpacing: 1.2,
           ),
         ),
-        backgroundColor: Colors.white,
         elevation: 0,
         centerTitle: true,
         iconTheme: const IconThemeData(color: Color(0xFF7C3AED)),
