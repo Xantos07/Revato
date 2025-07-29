@@ -38,16 +38,14 @@ class DreamDetail extends StatelessWidget {
                 title: const Text(
                   'Mon rêve',
                   style: TextStyle(
-                    color: Color(0xFF7C3AED),
                     fontWeight: FontWeight.bold,
                     fontSize: 24,
                     letterSpacing: 1.2,
                   ),
                 ),
-                backgroundColor: Colors.white,
+
                 elevation: 0,
                 centerTitle: true,
-                iconTheme: const IconThemeData(color: Color(0xFF7C3AED)),
               ),
               body: SingleChildScrollView(
                 padding: const EdgeInsets.symmetric(
@@ -62,7 +60,7 @@ class DreamDetail extends StatelessWidget {
                       style: const TextStyle(
                         fontSize: 26,
                         fontWeight: FontWeight.bold,
-                        color: Color(0xFF7C3AED),
+
                         letterSpacing: 0.5,
                       ),
                     ),
@@ -80,16 +78,12 @@ class DreamDetail extends StatelessWidget {
                           style: const TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
-                            color: Color(0xFF7C3AED),
                           ),
                         ),
                         const SizedBox(height: 4),
                         Text(
                           redaction.content,
-                          style: const TextStyle(
-                            fontSize: 16,
-                            color: Colors.black87,
-                          ),
+                          style: const TextStyle(fontSize: 16),
                         ),
                         const SizedBox(height: 12),
                       ],
@@ -106,7 +100,6 @@ class DreamDetail extends StatelessWidget {
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
-                          color: Color(0xFF7C3AED),
                         ),
                       ),
                       const SizedBox(height: 8),
@@ -119,7 +112,7 @@ class DreamDetail extends StatelessWidget {
                     Container(
                       margin: const EdgeInsets.symmetric(vertical: 16),
                       height: 1,
-                      color: const Color.fromARGB(255, 0, 0, 0),
+                      color: Theme.of(context).dividerColor,
                     ),
 
                     Row(

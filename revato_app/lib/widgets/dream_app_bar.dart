@@ -17,7 +17,7 @@ AppBar buildDreamAppBar({
     ),
     elevation: 0,
     centerTitle: true,
-    iconTheme: const IconThemeData(color: Color(0xFF7C3AED)),
+
     actions: [
       Consumer<ThemeProvider>(
         builder: (context, themeProvider, child) {

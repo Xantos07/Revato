@@ -113,7 +113,7 @@ class _DreamWritingCarouselState extends State<DreamWritingCarousel> {
   /// Construit l'AppBar en fonction de l'état d'édition sinon rien
   AppBar? _buildAppBar() {
     return widget.initialDream != null
-        ? buildDreamAppBar(title: 'Modifier aez rêve', context: context)
+        ? buildDreamAppBar(title: 'Modifier mon rêve', context: context)
         : buildDreamAppBar(title: 'Mon rêve', context: context);
   }
 

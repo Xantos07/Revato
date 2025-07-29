@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:revato_app/widgets/dream_app_bar.dart';
 
 class DreamAnalysis extends StatefulWidget {
   const DreamAnalysis({super.key});
@@ -11,19 +12,8 @@ class _DreamAnalysisScreenState extends State<DreamAnalysis> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text(
-          'Mon analyse de rêve',
-          style: TextStyle(
-            fontWeight: FontWeight.bold,
-            fontSize: 24,
-            letterSpacing: 1.2,
-          ),
-        ),
-        elevation: 0,
-        centerTitle: true,
-        iconTheme: const IconThemeData(color: Color(0xFF7C3AED)),
-      ),
+      appBar: buildDreamAppBar(title: 'Mon analyse de rêve', context: context),
+
       body: Center(
         child: Padding(
           padding: const EdgeInsets.all(16.0),
