@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:revato_app/model/dream_model.dart';
-import 'package:revato_app/widgets/dream_writing_carousel.dart';
+import 'package:revato_app/Screen/dream_writing_carousel.dart';
 import 'package:revato_app/widgets/DreamDetail/DreamDetail.dart';
 import 'package:revato_app/services/dream_service.dart';
 
