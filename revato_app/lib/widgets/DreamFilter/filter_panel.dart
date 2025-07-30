@@ -43,8 +43,8 @@ class _FilterPanelState extends State<FilterPanel>
       builder: (context, vm, _) {
         return Container(
           height: MediaQuery.of(context).size.height * 0.75,
-          decoration: const BoxDecoration(
-            color: Colors.white,
+          decoration: BoxDecoration(
+            color: Theme.of(context).colorScheme.surface,
             borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
           ),
           child: Column(
@@ -70,7 +70,6 @@ class _FilterPanelState extends State<FilterPanel>
                         style: TextStyle(
                           fontSize: 24,
                           fontWeight: FontWeight.bold,
-                          color: Color(0xFF7C3AED),
                         ),
                       ),
                     ),
@@ -80,7 +79,8 @@ class _FilterPanelState extends State<FilterPanel>
                         icon: const Icon(Icons.clear),
                         label: const Text('Réinitialiser'),
                         style: TextButton.styleFrom(
-                          foregroundColor: const Color(0xFF7C3AED),
+                          foregroundColor:
+                              Theme.of(context).colorScheme.primary,
                         ),
                       ),
                   ],
@@ -90,9 +90,9 @@ class _FilterPanelState extends State<FilterPanel>
               // Tabs
               TabBar(
                 controller: _tabController,
-                labelColor: const Color(0xFF7C3AED),
+                labelColor: Theme.of(context).colorScheme.primary,
                 unselectedLabelColor: Colors.grey,
-                indicatorColor: const Color(0xFF7C3AED),
+                indicatorColor: Theme.of(context).colorScheme.primary,
                 tabs: const [
                   Tab(text: 'Date & Tri'),
                   Tab(text: 'Tags'),
@@ -106,7 +106,7 @@ class _FilterPanelState extends State<FilterPanel>
                   controller: _tabController,
                   children: [
                     buildDateTab(context, vm),
-                    buildTagsTab(vm),
+                    buildTagsTab(context, vm),
                     buildContentTab(vm),
                   ],
                 ),

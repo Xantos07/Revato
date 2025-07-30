@@ -20,13 +20,18 @@ class DreamCarouselStepper extends StatelessWidget {
           width: i == page ? 22 : 12,
           height: 12,
           decoration: BoxDecoration(
-            color: i == page ? const Color(0xFF7C3AED) : Colors.grey[300],
+            color:
+                i == page
+                    ? Theme.of(context).colorScheme.primary
+                    : Colors.grey[300],
             borderRadius: BorderRadius.circular(8),
             boxShadow:
                 i == page
                     ? [
                       BoxShadow(
-                        color: const Color(0xFF7C3AED).withOpacity(0.3),
+                        color: Theme.of(
+                          context,
+                        ).colorScheme.primary.withOpacity(0.3),
                         blurRadius: 8,
                         offset: const Offset(0, 2),
                       ),

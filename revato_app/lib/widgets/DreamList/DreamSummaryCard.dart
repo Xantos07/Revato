@@ -27,8 +27,8 @@ class DreamSummaryCard extends StatelessWidget {
       elevation: 2,
       margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 2),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      color: Colors.white,
-      shadowColor: Colors.deepPurple.withOpacity(0.08),
+      color: Theme.of(context).colorScheme.surface,
+      shadowColor: Theme.of(context).colorScheme.surface,
       child: InkWell(
         borderRadius: BorderRadius.circular(16),
         onTap: () {
@@ -53,7 +53,7 @@ class DreamSummaryCard extends StatelessWidget {
                       style: const TextStyle(
                         fontWeight: FontWeight.bold,
                         fontSize: 18,
-                        color: Color(0xFF7C3AED),
+
                         letterSpacing: 0.5,
                       ),
                       maxLines: 1,
@@ -62,7 +62,7 @@ class DreamSummaryCard extends StatelessWidget {
                   ),
                   Text(
                     formatDate(dream.createdAt),
-                    style: const TextStyle(fontSize: 12, color: Colors.grey),
+                    style: const TextStyle(fontSize: 12),
                   ),
                 ],
               ),
@@ -71,11 +71,7 @@ class DreamSummaryCard extends StatelessWidget {
               if (preview.isNotEmpty)
                 Text(
                   preview,
-                  style: const TextStyle(
-                    fontSize: 14,
-                    color: Colors.black87,
-                    height: 1.4,
-                  ),
+                  style: const TextStyle(fontSize: 14, height: 1.4),
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                 ),

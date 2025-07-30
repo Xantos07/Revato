@@ -24,9 +24,9 @@ class TagSuggestionsWidget extends StatelessWidget {
     return Container(
       margin: const EdgeInsets.only(top: 4),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: Colors.grey.shade300),
+        border: Border.all(color: Theme.of(context).colorScheme.outline),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.1),
@@ -37,13 +37,16 @@ class TagSuggestionsWidget extends StatelessWidget {
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
-        children: suggestions.map(_buildSuggestionItem).toList(),
+        children:
+            suggestions
+                .map((suggestion) => _buildSuggestionItem(context, suggestion))
+                .toList(),
       ),
     );
   }
 
   /// Construit un élément de suggestion
-  Widget _buildSuggestionItem(String suggestion) {
+  Widget _buildSuggestionItem(BuildContext context, String suggestion) {
     return InkWell(
       onTap: () => onSuggestionTap(suggestion),
       child: Container(
@@ -53,7 +56,10 @@ class TagSuggestionsWidget extends StatelessWidget {
           border:
               suggestions.last != suggestion
                   ? Border(
-                    bottom: BorderSide(color: Colors.grey.shade200, width: 1),
+                    bottom: BorderSide(
+                      color: Theme.of(context).colorScheme.outlineVariant,
+                      width: 1,
+                    ),
                   )
                   : null,
         ),
@@ -62,9 +68,19 @@ class TagSuggestionsWidget extends StatelessWidget {
             Icon(Icons.history, size: 16, color: chipColor),
             const SizedBox(width: 8),
             Expanded(
-              child: Text(suggestion, style: const TextStyle(fontSize: 14)),
+              child: Text(
+                suggestion,
+                style: TextStyle(
+                  fontSize: 14,
+                  color: Theme.of(context).colorScheme.onSurface,
+                ),
+              ),
             ),
-            Icon(Icons.north_west, size: 16, color: Colors.grey.shade600),
+            Icon(
+              Icons.north_west,
+              size: 16,
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
           ],
         ),
       ),

@@ -4,6 +4,9 @@ import 'package:revato_app/viewmodel/dream_filter_view_model.dart';
 import 'package:revato_app/widgets/dream_analysis.dart';
 import 'package:revato_app/widgets/dream_list_screen.dart';
 import 'package:revato_app/services/navigation_core.dart';
+import 'themes/theme_provider.dart';
+import 'themes/light_theme.dart';
+import 'themes/dark_theme.dart';
 import 'widgets/dream_writing_carousel.dart';
 
 class RevatoApp extends StatelessWidget {
@@ -11,16 +14,26 @@ class RevatoApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Revato',
-      navigatorKey: NavigationCore.navigatorKey,
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-        scaffoldBackgroundColor: const Color(0xFFF6F6F6),
-        useMaterial3: true,
+    return ChangeNotifierProvider(
+      create: (context) => ThemeProvider()..loadTheme(),
+      child: Consumer<ThemeProvider>(
+        builder: (context, themeProvider, child) {
+          return MaterialApp(
+            title: 'Revato',
+            navigatorKey: NavigationCore.navigatorKey,
+            themeMode: themeProvider.themeMode,
+
+            // Thème clair
+            theme: LightTheme.theme,
+
+            // Thème sombre
+            darkTheme: DarkTheme.theme,
+
+            home: const DreamHomeScreen(),
+            debugShowCheckedModeBanner: false,
+          );
+        },
       ),
-      home: const DreamHomeScreen(),
-      debugShowCheckedModeBanner: false,
     );
   }
 }
@@ -41,7 +54,6 @@ class _DreamHomeScreenState extends State<DreamHomeScreen> {
     NavigationCore.registerTabController(setTab);
   }
 
-  // Permet à NavigationService de changer l'onglet courant
   void setTab(int index) {
     setState(() => _selectedIndex = index);
   }
@@ -53,6 +65,7 @@ class _DreamHomeScreenState extends State<DreamHomeScreen> {
       DreamListScreen(),
       DreamAnalysis(),
     ];
+
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => DreamFilterViewModel()),
@@ -73,9 +86,7 @@ class _DreamHomeScreenState extends State<DreamHomeScreen> {
               label: 'Analyses',
             ),
           ],
-          selectedItemColor: Color(0xFF7C3AED),
-          unselectedItemColor: Colors.grey,
-          backgroundColor: Colors.white,
+          // Ces propriétés sont maintenant définies dans le thème
           type: BottomNavigationBarType.fixed,
         ),
       ),

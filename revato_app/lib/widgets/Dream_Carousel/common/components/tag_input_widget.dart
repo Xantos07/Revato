@@ -32,7 +32,7 @@ class TagInputWidget extends StatelessWidget {
           child: TextField(
             controller: controller,
             focusNode: focusNode,
-            decoration: dreamInputDecoration(label),
+            decoration: dreamInputDecoration(context, label),
             onSubmitted: onSubmitted,
           ),
         ),

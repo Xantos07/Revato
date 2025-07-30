@@ -6,6 +6,7 @@ import 'package:revato_app/viewmodel/dream_filter_view_model.dart';
 import 'package:revato_app/widgets/DreamFilter/filter_panel.dart';
 import 'package:revato_app/widgets/DreamFilter/search_bar.dart';
 import 'package:revato_app/widgets/DreamList/DreamSummaryCard.dart';
+import 'package:revato_app/widgets/dream_app_bar.dart';
 
 class DreamListScreen extends StatefulWidget {
   const DreamListScreen({super.key});
@@ -68,21 +69,7 @@ class _DreamListScreenState extends State<DreamListScreen> {
 
       value: _filterViewModel,
       child: Scaffold(
-        appBar: AppBar(
-          title: const Text(
-            'Mes rêves',
-            style: TextStyle(
-              color: Color(0xFF7C3AED),
-              fontWeight: FontWeight.bold,
-              fontSize: 24,
-              letterSpacing: 1.2,
-            ),
-          ),
-          backgroundColor: Colors.white,
-          elevation: 0,
-          centerTitle: true,
-          iconTheme: const IconThemeData(color: Color(0xFF7C3AED)),
-        ),
+        appBar: buildDreamAppBar(title: 'Mes rêves', context: context),
         body: Column(
           children: [
             // Search bar for filtering dreams
@@ -141,12 +128,7 @@ class _DreamListScreenState extends State<DreamListScreen> {
                                   const SizedBox(height: 8),
                                   TextButton(
                                     onPressed: () => vm.clearAll(),
-                                    child: const Text(
-                                      'Effacer les filtres',
-                                      style: TextStyle(
-                                        color: Color(0xFF7C3AED),
-                                      ),
-                                    ),
+                                    child: const Text('Effacer les filtres'),
                                   ),
                                 ],
                               ),
