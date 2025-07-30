@@ -25,8 +25,18 @@ class AppDatabase {
   /// Point d'entrée unique pour obtenir la connexion à la base de données
   /// Lazy loading : crée la DB seulement au premier accès
   Future<Database> get database async {
-    if (_database != null) return _database!; // Retourne l'instance existante
-    _database = await _initDatabase(); // Sinon, initialise la DB
+    if (_database != null) {
+      final currentVersion = await _database!.getVersion();
+
+      if (currentVersion < 2) {
+        await _database!.close();
+        _database = null;
+      }
+    }
+
+    if (_database == null) {
+      _database = await _initDatabase();
+    }
     return _database!;
   }
 
@@ -251,6 +261,7 @@ class AppDatabase {
     int oldVersion,
     int newVersion,
   ) async {
+    print('Upgrading database from $oldVersion to $newVersion');
     // Migration de v1 vers v2 : ajout des colonnes de personnalisation
     if (oldVersion < 2) {
       await _migrateToVersion2(db);
