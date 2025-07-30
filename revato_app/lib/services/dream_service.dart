@@ -444,6 +444,29 @@ class DreamService {
     return tagResults.map((row) => row['name'] as String).toList();
   }
 
+  // ⬅️ NOUVELLES MÉTHODES pour récupérer seulement les catégories actives
+  Future<List<RedactionCategory>> getActiveRedactionCategories() async {
+    final db = await AppDatabase().database;
+    final results = await db.query(
+      'redaction_categories',
+      where: 'is_display = ?',
+      whereArgs: [1],
+      orderBy: 'display_order ASC, name ASC',
+    );
+    return results.map((row) => RedactionCategory.fromMap(row)).toList();
+  }
+
+  Future<List<TagCategory>> getActiveTagCategories() async {
+    final db = await AppDatabase().database;
+    final results = await db.query(
+      'tag_categories',
+      where: 'is_display = ?',
+      whereArgs: [1],
+      orderBy: 'display_order ASC, name ASC',
+    );
+    return results.map((row) => TagCategory.fromMap(row)).toList();
+  }
+
   // Méthode pour récupérer toutes les catégories de tags
   Future<List<TagCategory>> getAllTagCategories() async {
     final db = await AppDatabase().database;
@@ -486,7 +509,7 @@ class DreamService {
   /// **RÉCUPÉRATION DE TOUS LES TAGS DISPONIBLES**
   /// Retourne une liste plate de tous les tags, toutes catégories confondues
   Future<List<String>> getAllAvailableTags() async {
-    final categories = await getAllTagCategories();
+    final categories = await getActiveTagCategories();
     final List<String> allTags = [];
 
     for (final category in categories) {
@@ -500,7 +523,7 @@ class DreamService {
   /// **RÉCUPÉRATION DES TAGS AVEC LEURS CATÉGORIES**
   /// Retourne un Map associant chaque tag à sa catégorie
   Future<Map<String, String>> getTagsWithCategories() async {
-    final categories = await getAllTagCategories();
+    final categories = await getActiveTagCategories();
     final Map<String, String> tagToCategory = {};
 
     for (final category in categories) {
@@ -522,12 +545,6 @@ class DreamService {
     return allTags
         .where((tag) => tag.toLowerCase().contains(searchText.toLowerCase()))
         .toList();
-  }
-
-  /// **RÉCUPÉRATION DES CATÉGORIES POPULAIRES**
-  /// Retourne les catégories les plus utilisées
-  Future<List<TagCategory>> getPopularCategories() async {
-    return await getAllTagCategories();
   }
 
   /// **RÉCUPÉRATION DE LA CATÉGORIE D'UN TAG**

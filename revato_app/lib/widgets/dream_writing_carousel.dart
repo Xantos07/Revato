@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:revato_app/model/dream_model.dart';
-import 'package:revato_app/themes/theme_provider.dart';
 import 'package:revato_app/viewmodel/dream_writing_view_model.dart';
 import 'package:revato_app/widgets/Dream_Carousel/DreamCarouselNavigation.dart';
 import 'package:revato_app/widgets/Dream_Carousel/DreamCarouselStepper.dart';

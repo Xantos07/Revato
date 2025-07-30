@@ -40,7 +40,7 @@ class TagCategory {
       displayName: map['display_name'] as String?, // Nom affiché optionnel
       description: map['description'] as String?, // Description optionnelle
       color: map['color'] as String?, // Couleur hex optionnelle
-      isDisplay: map['is_display'] as bool, // Affichage optionnel
+      isDisplay: (map['is_display'] ?? 1) == 1, // Affichage optionnel
       displayOrder: map['display_order'] as int? ?? 0, // Ordre d'affichage
       createdAt: DateTime.parse(
         map['created_at'] as String,
