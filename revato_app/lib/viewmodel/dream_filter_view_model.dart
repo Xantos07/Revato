@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:revato_app/services/dream_service.dart';
 import 'package:revato_app/model/tag_model.dart';
 import 'package:revato_app/model/dream_model.dart';
+import 'package:revato_app/services/tag_service.dart';
 
 /// **VIEW MODEL POUR LE FILTRAGE DES RÊVES**
 ///
@@ -14,11 +15,13 @@ import 'package:revato_app/model/dream_model.dart';
 class DreamFilterViewModel extends ChangeNotifier {
   // **INJECTION DE DÉPENDANCE**
   final DreamService _dreamService;
+  final TagService _tagService;
 
   /// **CONSTRUCTEUR AVEC INJECTION DE DÉPENDANCE**
   /// Permet une meilleure testabilité et découplage
-  DreamFilterViewModel({DreamService? dreamService})
-    : _dreamService = dreamService ?? DreamService() {
+  DreamFilterViewModel({DreamService? dreamService, TagService? tagService})
+    : _dreamService = dreamService ?? DreamService(),
+      _tagService = tagService ?? TagService() {
     _initializeAsync();
   }
 
@@ -77,11 +80,11 @@ class DreamFilterViewModel extends ChangeNotifier {
     notifyListeners();
 
     try {
-      _availableTagCategories = await _dreamService.getAllTagCategories();
+      _availableTagCategories = await _tagService.getAllTagCategories();
 
       // Charger les tags pour chaque catégorie
       for (final category in _availableTagCategories) {
-        final tags = await _dreamService.getTagsForCategory(category.name);
+        final tags = await _tagService.getTagsForCategory(category.name);
         _tagsByCategory[category.name] = tags;
       }
     } catch (e) {
