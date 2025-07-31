@@ -30,21 +30,15 @@ class TagEditManager {
               fontSize: 24,
               fontWeight: FontWeight.bold,
               fontFamily: 'Roboto',
-              color: Color(0xFF7C3AED),
             ),
           ),
-          backgroundColor: Colors.white,
           content: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
                 'Que voulez-vous faire avec le tag "$tag" ?',
-                style: const TextStyle(
-                  fontSize: 16,
-                  color: Colors.black87,
-                  fontFamily: 'Roboto',
-                ),
+                style: const TextStyle(fontSize: 16, fontFamily: 'Roboto'),
               ),
               const SizedBox(height: 16),
               const Text(
@@ -107,7 +101,6 @@ class TagEditManager {
       builder: (BuildContext context) {
         return AlertDialog(
           title: const Text('Renommer le tag globalement'),
-          backgroundColor: Colors.white,
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [

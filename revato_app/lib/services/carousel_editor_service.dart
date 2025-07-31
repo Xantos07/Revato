@@ -167,7 +167,7 @@ class CarouselEditorService {
       'description': description,
       'color': color ?? '#7C3AED',
       'is_display': 1,
-      'display_order': 999, // Mettre à la fin par défaut
+      'display_order': 999,
       'created_at': DateTime.now().toIso8601String(),
     });
   }
