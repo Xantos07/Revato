@@ -6,6 +6,7 @@ import 'package:revato_app/model/redaction_model.dart';
 import 'package:revato_app/model/tag_model.dart';
 import 'package:revato_app/services/dream_service.dart';
 import 'package:revato_app/services/tag_service.dart';
+import 'package:revato_app/services/carousel_editor_service.dart';
 
 /// **VIEW MODEL - GESTIONNAIRE D'ÉTAT**
 /// Pattern MVVM : sépare la logique métier de l'interface utilisateur
@@ -19,11 +20,17 @@ class DreamWritingViewModel extends ChangeNotifier {
   // **INJECTION DE DÉPENDANCE** - Meilleure testabilité
   final DreamService _dreamService;
   final TagService _tagService;
+  final CarouselEditorService _carouselEditorService;
 
   /// **CONSTRUCTEUR AVEC INJECTION DE DÉPENDANCE**
-  DreamWritingViewModel({DreamService? dreamService, TagService? tagService})
-    : _dreamService = dreamService ?? DreamService(),
-      _tagService = tagService ?? TagService() {
+  DreamWritingViewModel({
+    DreamService? dreamService,
+    TagService? tagService,
+    CarouselEditorService? carouselEditorService,
+  }) : _dreamService = dreamService ?? DreamService(),
+       _tagService = tagService ?? TagService(),
+       _carouselEditorService =
+           carouselEditorService ?? CarouselEditorService() {
     _initializeAsync();
   }
 
@@ -70,16 +77,19 @@ class DreamWritingViewModel extends ChangeNotifier {
 
     try {
       // **2. RÉCUPÉRATION DES DONNÉES DEPUIS LA DB**
-      _availableCategories = await _tagService.getAllTagCategories();
+      // Utilise le CarouselEditorService pour récupérer seulement les catégories visibles
+      // dans l'ordre défini par l'utilisateur
+      _availableCategories =
+          await _carouselEditorService.getVisibleTagCategories();
       _availableCategoriesRedaction =
-          await _tagService.getAllRedactionCategories();
+          await _carouselEditorService.getVisibleRedactionCategories();
 
       // **DEBUG** - Vérification des données chargées
       debugPrint(
-        'Catégories chargées: ${_availableCategories.map((c) => c.name).toList()}',
+        'Catégories visibles chargées: ${_availableCategories.map((c) => c.name).toList()}',
       );
       debugPrint(
-        'Catégories de rédaction chargées: ${_availableCategoriesRedaction.map((c) => c.name).toList()}',
+        'Catégories de rédaction visibles chargées: ${_availableCategoriesRedaction.map((c) => c.name).toList()}',
       );
     } catch (e) {
       debugPrint('Erreur lors du chargement des catégories: $e');
