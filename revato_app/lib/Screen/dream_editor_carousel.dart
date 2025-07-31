@@ -33,7 +33,7 @@ class _DreamEditorCarouselState extends State<DreamEditorCarousel>
       child: Scaffold(
         appBar: AppBar(
           title: const Text(
-            'Personnalisation du carousel',
+            'Edit',
             style: TextStyle(
               fontWeight: FontWeight.bold,
               fontSize: 24,
