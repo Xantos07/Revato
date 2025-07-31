@@ -178,7 +178,6 @@ class DreamDetail extends StatelessWidget {
             'Supprimer votre rêve',
             style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
           ),
-          backgroundColor: Colors.white,
           content: const Text.rich(
             TextSpan(
               children: [

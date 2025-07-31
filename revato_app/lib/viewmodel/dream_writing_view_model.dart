@@ -5,6 +5,8 @@ import 'package:revato_app/model/dream_model.dart';
 import 'package:revato_app/model/redaction_model.dart';
 import 'package:revato_app/model/tag_model.dart';
 import 'package:revato_app/services/dream_service.dart';
+import 'package:revato_app/services/tag_service.dart';
+import 'package:revato_app/services/carousel_editor_service.dart';
 
 /// **VIEW MODEL - GESTIONNAIRE D'ÉTAT**
 /// Pattern MVVM : sépare la logique métier de l'interface utilisateur
@@ -17,10 +19,18 @@ import 'package:revato_app/services/dream_service.dart';
 class DreamWritingViewModel extends ChangeNotifier {
   // **INJECTION DE DÉPENDANCE** - Meilleure testabilité
   final DreamService _dreamService;
+  final TagService _tagService;
+  final CarouselEditorService _carouselEditorService;
 
   /// **CONSTRUCTEUR AVEC INJECTION DE DÉPENDANCE**
-  DreamWritingViewModel({DreamService? dreamService})
-    : _dreamService = dreamService ?? DreamService() {
+  DreamWritingViewModel({
+    DreamService? dreamService,
+    TagService? tagService,
+    CarouselEditorService? carouselEditorService,
+  }) : _dreamService = dreamService ?? DreamService(),
+       _tagService = tagService ?? TagService(),
+       _carouselEditorService =
+           carouselEditorService ?? CarouselEditorService() {
     _initializeAsync();
   }
 
@@ -67,16 +77,19 @@ class DreamWritingViewModel extends ChangeNotifier {
 
     try {
       // **2. RÉCUPÉRATION DES DONNÉES DEPUIS LA DB**
-      _availableCategories = await _dreamService.getAllTagCategories();
+      // Utilise le CarouselEditorService pour récupérer seulement les catégories visibles
+      // dans l'ordre défini par l'utilisateur
+      _availableCategories =
+          await _carouselEditorService.getVisibleTagCategories();
       _availableCategoriesRedaction =
-          await _dreamService.getAllRedactionCategories();
+          await _carouselEditorService.getVisibleRedactionCategories();
 
       // **DEBUG** - Vérification des données chargées
       debugPrint(
-        'Catégories chargées: ${_availableCategories.map((c) => c.name).toList()}',
+        'Catégories visibles chargées: ${_availableCategories.map((c) => c.name).toList()}',
       );
       debugPrint(
-        'Catégories de rédaction chargées: ${_availableCategoriesRedaction.map((c) => c.name).toList()}',
+        'Catégories de rédaction visibles chargées: ${_availableCategoriesRedaction.map((c) => c.name).toList()}',
       );
     } catch (e) {
       debugPrint('Erreur lors du chargement des catégories: $e');
@@ -90,7 +103,7 @@ class DreamWritingViewModel extends ChangeNotifier {
   /// **RÉCUPÉRATION DES TAGS** pour une catégorie spécifique
   /// Méthode asynchrone qui interroge la base de données
   Future<List<String>> getTagsForCategory(String categoryName) {
-    return _dreamService.getTagsForCategory(categoryName);
+    return _tagService.getTagsForCategory(categoryName);
   }
 
   /// **RÉCUPÉRATION DES TAGS LOCAUX** (stockés temporairement)
@@ -220,7 +233,7 @@ class DreamWritingViewModel extends ChangeNotifier {
   /// Renomme un tag globalement dans tous les rêves
   Future<bool> renameTagGlobally(String oldName, String newName) async {
     try {
-      final success = await _dreamService.renameTagGlobally(oldName, newName);
+      final success = await _tagService.renameTagGlobally(oldName, newName);
       if (success) {
         // Mettre à jour localement si le tag est présent
         for (final category in _tagsByCategory.keys) {
@@ -247,7 +260,7 @@ class DreamWritingViewModel extends ChangeNotifier {
   /// Récupère tous les tags existants pour l'autocomplétion
   Future<List<String>> getAllAvailableTags() async {
     try {
-      return await _dreamService.getAllAvailableTags();
+      return await _tagService.getAllAvailableTags();
     } catch (e) {
       debugPrint('Erreur lors de la récupération des tags: $e');
       return [];

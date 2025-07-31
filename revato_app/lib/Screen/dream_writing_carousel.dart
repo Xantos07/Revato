@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:revato_app/model/dream_model.dart';
-import 'package:revato_app/themes/theme_provider.dart';
 import 'package:revato_app/viewmodel/dream_writing_view_model.dart';
 import 'package:revato_app/widgets/Dream_Carousel/DreamCarouselNavigation.dart';
 import 'package:revato_app/widgets/Dream_Carousel/DreamCarouselStepper.dart';
@@ -247,8 +246,8 @@ class _DreamPageBuilder {
             final existingTags = snapshot.data ?? [];
             final localTags = vm.getLocalTagsForCategory(category.name);
             return DreamTagsPage(
-              title: category.description ?? category.name,
-              label: 'Ajoute des ${category.name}...',
+              title: category.displayName,
+              label: 'Ajoute des ${category.description}...',
               tags: localTags,
               onChanged: (tags) => vm.setTagsForCategory(category.name, tags),
               chipColor: category.getFlutterColor(),
@@ -264,7 +263,7 @@ class _DreamPageBuilder {
       ...vm.availableCategoriesRedaction.map((category) {
         final noteController = synchronizer.getNoteController(category.name);
         return DreamNotePage(
-          title: category.description,
+          title: category.displayName,
           label: 'écrit sur : ${category.description}...',
           controller: noteController,
         );
