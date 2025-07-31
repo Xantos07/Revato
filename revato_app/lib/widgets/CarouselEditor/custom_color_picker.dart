@@ -28,22 +28,22 @@ class _CustomColorPickerState extends State<CustomColorPicker> {
 
   /// **COULEURS PRÉDÉFINIES POPULAIRES**
   final List<String> predefinedColors = [
-    '#E57373', // Rouge clair
-    '#64B5F6', // Bleu clair
-    '#81C784', // Vert clair
-    '#BA68C8', // Violet clair
-    '#FFD54F', // Jaune
-    '#7C3AED', // Violet foncé
-    '#FF8A65', // Orange
+    '#121212', // noir
+    '#1E1E1E', // gris très foncé
+    '#F5F5F5', // blanc cassé
+    '#B0B0B0', // gris clair
+    '#FFD54F', // Jaune principal
+    '#FFC107', // Jaune accent
+    '#7C3AED', // Violet profond
     '#4DB6AC', // Turquoise
+    '#81C784', // Vert clair
     '#F06292', // Rose
+    '#FF5722', // Orange profond
+    '#3F51B5', // Indigo profond
+    '#64B5F6', // Bleu clair
     '#9575CD', // Violet moyen
-    '#FF5722', // Rouge orangé
-    '#795548', // Marron
+    '#E57373', // Rouge clair
     '#607D8B', // Bleu gris
-    '#FFC107', // Ambre
-    '#8BC34A', // Vert clair
-    '#3F51B5', // Indigo
   ];
 
   @override
@@ -54,7 +54,19 @@ class _CustomColorPickerState extends State<CustomColorPicker> {
       children: [
         const Text('Couleur:', style: TextStyle(fontWeight: FontWeight.w500)),
         const SizedBox(height: 12),
+        // Bouton sélecteur de couleur personnalisé
+        ElevatedButton.icon(
+          onPressed: _showCustomColorPicker,
+          icon: const Icon(Icons.palette, size: 16),
+          label: const Text('Personnaliser'),
+          style: ElevatedButton.styleFrom(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+            minimumSize: Size.zero,
+            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+          ),
+        ),
 
+        const SizedBox(height: 16),
         // Couleur sélectionnée actuelle
         Row(
           children: [
@@ -84,7 +96,7 @@ class _CustomColorPickerState extends State<CustomColorPicker> {
 
         // Couleurs prédéfinies
         const Text(
-          'Couleurs disponibles:',
+          'Couleurs prédéfinies:',
           style: TextStyle(fontWeight: FontWeight.w500),
         ),
         const SizedBox(height: 8),
@@ -129,5 +141,221 @@ class _CustomColorPickerState extends State<CustomColorPicker> {
       currentColor = Color(int.parse(color.replaceFirst('#', '0xFF')));
     });
     widget.onColorChanged(color);
+  }
+
+  /// **AFFICHAGE DU SÉLECTEUR DE COULEUR PERSONNALISÉ**
+  void _showCustomColorPicker() {
+    showDialog(
+      context: context,
+      builder:
+          (context) => _CustomColorPickerDialog(
+            initialColor: currentColor,
+            onColorSelected: (color) {
+              final hexColor =
+                  '#${color.value.toRadixString(16).substring(2).toUpperCase()}';
+              _selectColor(hexColor);
+            },
+          ),
+    );
+  }
+}
+
+/// **DIALOG SÉLECTEUR DE COULEUR PERSONNALISÉ**
+class _CustomColorPickerDialog extends StatefulWidget {
+  final Color initialColor;
+  final Function(Color) onColorSelected;
+
+  const _CustomColorPickerDialog({
+    required this.initialColor,
+    required this.onColorSelected,
+  });
+
+  @override
+  State<_CustomColorPickerDialog> createState() =>
+      _CustomColorPickerDialogState();
+}
+
+class _CustomColorPickerDialogState extends State<_CustomColorPickerDialog> {
+  late Color selectedColor;
+  late double hue;
+  late double saturation;
+  late double lightness;
+
+  @override
+  void initState() {
+    super.initState();
+    selectedColor = widget.initialColor;
+    final hslColor = HSLColor.fromColor(selectedColor);
+    hue = hslColor.hue;
+    saturation = hslColor.saturation;
+    lightness = hslColor.lightness;
+  }
+
+  void _updateColor() {
+    setState(() {
+      selectedColor =
+          HSLColor.fromAHSL(1.0, hue, saturation, lightness).toColor();
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: const Text('Choisir une couleur'),
+      content: SizedBox(
+        width: 300,
+        height: 350,
+        child: Column(
+          children: [
+            // Aperçu de la couleur sélectionnée
+            Container(
+              width: double.infinity,
+              height: 60,
+              decoration: BoxDecoration(
+                color: selectedColor,
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: Colors.grey.shade300),
+              ),
+              child: Center(
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 4,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.black.withOpacity(0.6),
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                  child: Text(
+                    '#${selectedColor.value.toRadixString(16).substring(2).toUpperCase()}',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontFamily: 'monospace',
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: 20),
+
+            // Curseur de teinte (Hue)
+            _buildSlider(
+              label: 'Teinte',
+              value: hue,
+              max: 360,
+              onChanged: (value) {
+                hue = value;
+                _updateColor();
+              },
+              gradient: LinearGradient(
+                colors: [
+                  Colors.red,
+                  Colors.orange,
+                  Colors.yellow,
+                  Colors.green,
+                  Colors.blue,
+                  Colors.indigo,
+                  Colors.purple,
+                  Colors.red,
+                ],
+              ),
+            ),
+
+            const SizedBox(height: 16),
+
+            // Curseur de saturation
+            _buildSlider(
+              label: 'Saturation',
+              value: saturation,
+              max: 1.0,
+              onChanged: (value) {
+                saturation = value;
+                _updateColor();
+              },
+              gradient: LinearGradient(
+                colors: [
+                  HSLColor.fromAHSL(1.0, hue, 0.0, lightness).toColor(),
+                  HSLColor.fromAHSL(1.0, hue, 1.0, lightness).toColor(),
+                ],
+              ),
+            ),
+
+            const SizedBox(height: 16),
+
+            // Curseur de luminosité
+            _buildSlider(
+              label: 'Luminosité',
+              value: lightness,
+              max: 1.0,
+              onChanged: (value) {
+                lightness = value;
+                _updateColor();
+              },
+              gradient: LinearGradient(
+                colors: [
+                  Colors.black,
+                  HSLColor.fromAHSL(1.0, hue, saturation, 0.5).toColor(),
+                  Colors.white,
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: const Text('Annuler'),
+        ),
+        ElevatedButton(
+          onPressed: () {
+            widget.onColorSelected(selectedColor);
+            Navigator.pop(context);
+          },
+          child: const Text('Choisir'),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildSlider({
+    required String label,
+    required double value,
+    required double max,
+    required Function(double) onChanged,
+    required Gradient gradient,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          '$label: ${(value / max * 100).round()}%',
+          style: const TextStyle(fontWeight: FontWeight.w500),
+        ),
+        const SizedBox(height: 4),
+        Container(
+          height: 30,
+          decoration: BoxDecoration(
+            gradient: gradient,
+            borderRadius: BorderRadius.circular(15),
+            border: Border.all(color: Colors.grey.shade300),
+          ),
+          child: SliderTheme(
+            data: SliderTheme.of(context).copyWith(
+              trackHeight: 30,
+              thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 12),
+              overlayShape: const RoundSliderOverlayShape(overlayRadius: 20),
+              trackShape: const RoundedRectSliderTrackShape(),
+              activeTrackColor: Colors.transparent,
+              inactiveTrackColor: Colors.transparent,
+              thumbColor: Colors.white,
+              overlayColor: Colors.white.withOpacity(0.2),
+            ),
+            child: Slider(value: value, max: max, onChanged: onChanged),
+          ),
+        ),
+      ],
+    );
   }
 }
