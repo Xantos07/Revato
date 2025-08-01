@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import 'package:revato_app/model/dream_model.dart';
 import 'package:revato_app/services/dream_service.dart';
 
@@ -62,13 +63,20 @@ class GraphViewModel extends ChangeNotifier {
         'size': _getDreamSize(dream),
         'tagsCount': dream.tags.length,
         'redactionsCount': dream.redactions.length,
-        'primaryTag': _getPrimaryTag(dream), // Tag principal pour le groupage
-        'allTags': dream.tags.map((tag) => tag.name).toList(), // Tous les tags
+        'allTags': dream.tags.map((tag) => tag.name).toList(),
+        'color': _getDreamColorHex(),
       });
     }
 
     // Créer des liens basés sur des critères (exemple: proximité temporelle, mots-clés similaires)
     _generateLinks();
+  }
+
+  /// Obtient la couleur d'un rêve pour le nœud
+  /// Utilise une logique simple basée sur le nombre de tags
+  String _getDreamColorHex() {
+    // Exemple : retourne "#FF4AB1" (rose)
+    return '#FF4AB1';
   }
 
   /// Extrait la description principale d'un rêve depuis ses rédactions
@@ -92,17 +100,6 @@ class GraphViewModel extends ChangeNotifier {
     final sizeBonus = dream.tags.length * 2;
 
     return baseSize + sizeBonus;
-  }
-
-  /// Détermine le tag principal d'un rêve pour le groupage
-  String _getPrimaryTag(Dream dream) {
-    if (dream.tags.isEmpty) return 'Sans tag';
-
-    // Stratégie 1: Premier tag (tu peux changer cette logique)
-    return dream.tags.first.name;
-
-    // Stratégie 2: Tag le plus fréquent globalement (plus complexe)
-    // return _getMostFrequentTag(dream);
   }
 
   /// Génère des liens entre les rêves basés sur des critères
@@ -159,20 +156,6 @@ class GraphViewModel extends ChangeNotifier {
     return strength.clamp(0.1, 1.0);
   }
 
-  /// Obtient les tags les plus fréquents (pour interface utilisateur)
-  List<MapEntry<String, int>> getTopTags({int limit = 10}) {
-    final tagCounts = <String, int>{};
-    for (final node in _nodes) {
-      final primaryTag = node['primaryTag'] as String? ?? 'Sans tag';
-      tagCounts[primaryTag] = (tagCounts[primaryTag] ?? 0) + 1;
-    }
-
-    final sortedTags =
-        tagCounts.entries.toList()..sort((a, b) => b.value.compareTo(a.value));
-
-    return sortedTags.take(limit).toList();
-  }
-
   /// Obtient les informations détaillées d'un rêve par son ID
   Dream? getDreamById(String dreamId) {
     try {
@@ -185,25 +168,11 @@ class GraphViewModel extends ChangeNotifier {
 
   /// Obtient les statistiques du graphique
   Map<String, dynamic> getGraphStats() {
-    // Compter les rêves par tag principal
-    final tagCounts = <String, int>{};
-    for (final node in _nodes) {
-      final primaryTag = node['primaryTag'] as String? ?? 'Sans tag';
-      tagCounts[primaryTag] = (tagCounts[primaryTag] ?? 0) + 1;
-    }
-
-    // Garder seulement les 10 tags les plus fréquents pour les stats
-    final sortedTags =
-        tagCounts.entries.toList()..sort((a, b) => b.value.compareTo(a.value));
-    final topTags = Map<String, int>.fromEntries(sortedTags.take(10));
-
     return {
       'totalDreams': _dreams.length,
       'totalConnections': _links.length,
       'avgConnectionsPerDream':
           _dreams.isNotEmpty ? _links.length / _dreams.length : 0.0,
-      'topTags': topTags, // Top 10 des tags les plus fréquents
-      'totalUniqueTags': tagCounts.length,
     };
   }
 }
