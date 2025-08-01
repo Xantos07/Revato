@@ -18,6 +18,13 @@ class NavigationCore {
   /// Va à l'onglet "Mon rêve"
   void goToDreamWritting() {
     if (_tabController != null) {
+      _tabController!(1);
+    }
+  }
+
+  /// Va à l'onglet "Editer"
+  void goToDreamEditor() {
+    if (_tabController != null) {
       _tabController!(0);
     }
   }
@@ -27,14 +34,14 @@ class NavigationCore {
     print('Navigating to Dream List Tab');
     if (_tabController != null) {
       print('Oui je suis bien dans Navigating to Dream List Tab');
-      _tabController!(1);
+      _tabController!(2);
     }
   }
 
   /// Va à l'onglet "Analyse"
   void goToDreamAnalyse() {
     if (_tabController != null) {
-      _tabController!(2);
+      _tabController!(3);
     }
   }
 

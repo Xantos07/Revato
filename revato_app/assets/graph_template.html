@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
+    <style>
+        body { margin: 0; overflow: hidden; }
+        #graph { width: 100vw; height: 100vh; }
+        .node { cursor: pointer; }
+        .link { stroke: #999; stroke-opacity: 0.6; }
+    </style>
+</head>
+<body>
+    <svg id="graph"></svg>
+    
+    <script>
+        let simulation, nodes, links, nodeElements, linkElements;
+        const svg = d3.select("#graph");
+        const width = window.innerWidth;
+        const height = window.innerHeight;
+        
+        svg.attr("width", width).attr("height", height);
+        
+        // Ajouter le zoom et pan
+        const zoom = d3.zoom()
+            .scaleExtent([0.1, 10])
+            .on("zoom", function(event) {
+                container.attr("transform", event.transform);
+            });
+        
+        svg.call(zoom);
+        
+        // Container pour les éléments du graphique (pour le zoom/pan)
+        const container = svg.append("g");
+        
+        // Initialiser la simulation D3
+        function initSimulation() {
+            simulation = d3.forceSimulation()
+                .force("link", d3.forceLink().id(d => d.id).distance(100))
+                .force("charge", d3.forceManyBody().strength(-300))
+                .force("center", d3.forceCenter(width / 2, height / 2));
+        }
+        
+        // Fonction appelée depuis Flutter
+        window.updateGraph = function(data) {
+            nodes = data.nodes;
+            links = data.links;
+            renderGraph();
+        };
+        
+        // Fonction de filtrage appelée depuis Flutter
+        window.filterNodesByGroup = function(group) {
+            nodeElements.style("opacity", d => d.group === group ? 1 : 0.3);
+        };
+        
+        // Fonctions de navigation
+        window.centerGraph = function() {
+            const bounds = container.node().getBBox();
+            const fullWidth = width;
+            const fullHeight = height;
+            const widthScale = fullWidth / bounds.width;
+            const heightScale = fullHeight / bounds.height;
+            const scale = 0.8 * Math.min(widthScale, heightScale);
+            const centerX = bounds.x + bounds.width / 2;
+            const centerY = bounds.y + bounds.height / 2;
+            const translate = [fullWidth / 2 - scale * centerX, fullHeight / 2 - scale * centerY];
+            
+            svg.transition().duration(750).call(
+                zoom.transform,
+                d3.zoomIdentity.translate(translate[0], translate[1]).scale(scale)
+            );
+        };
+        
+        window.zoomIn = function() {
+            svg.transition().duration(300).call(zoom.scaleBy, 1.5);
+        };
+        
+        window.zoomOut = function() {
+            svg.transition().duration(300).call(zoom.scaleBy, 1 / 1.5);
+        };
+        
+        window.resetView = function() {
+            svg.transition().duration(750).call(
+                zoom.transform,
+                d3.zoomIdentity.translate(0, 0).scale(1)
+            );
+        };
+        
+        function renderGraph() {
+            // Supprimer les éléments existants (sauf le container)
+            container.selectAll("*").remove();
+            
+            // Créer les liens dans le container
+            linkElements = container.append("g")
+                .selectAll("line")
+                .data(links)
+                .enter().append("line")
+                .attr("class", "link")
+                .attr("stroke-width", d => (d.strength) || 2); 
+            
+            // Créer les nœuds dans le container
+            nodeElements = container.append("g")
+                .selectAll("circle")
+                .data(nodes)
+                .enter().append("circle")
+                .attr("class", "node")
+                .attr("r", d => (d.size/2) || 20) 
+                .attr("fill", d => d3.schemeCategory10[d.group])
+                .call(d3.drag()
+                    .on("start", dragstarted)
+                    .on("drag", dragged)
+                    .on("end", dragended))
+                .on("click", function(event, d) {
+                    // Envoyer message à Flutter
+                    FlutterGraph.postMessage(JSON.stringify({
+                        type: 'nodeClick',
+                        nodeId: d.id
+                    }));
+                })
+                .on("mouseover", function(event, d) {
+                    FlutterGraph.postMessage(JSON.stringify({
+                        type: 'nodeHover',
+                        nodeId: d.id
+                    }));
+                });
+            
+            // Ajouter les labels dans le container
+            const labels = container.append("g")
+                .selectAll("text")
+                .data(nodes)
+                .enter().append("text")
+                .text(d => d.label)
+                .attr("text-anchor", "middle")
+     .attr("dy", d => (d.size ? d.size / 2 + 14 : 24))
+                .style("pointer-events", "none")
+                .style("font-size", "12px")
+                .style("fill", "black");
+            
+            // Démarrer la simulation
+            simulation.nodes(nodes);
+            simulation.force("link").links(links);
+            simulation.alpha(1).restart();
+            
+            // Mise à jour des positions
+            simulation.on("tick", () => {
+                linkElements
+                    .attr("x1", d => d.source.x)
+                    .attr("y1", d => d.source.y)
+                    .attr("x2", d => d.target.x)
+                    .attr("y2", d => d.target.y);
+                
+                nodeElements
+                    .attr("cx", d => d.x)
+                    .attr("cy", d => d.y);
+                
+                labels
+                    .attr("x", d => d.x)
+                    .attr("y", d => d.y);
+            });
+        }
+        
+        // Fonctions de drag
+        function dragstarted(event, d) {
+            if (!event.active) simulation.alphaTarget(0.3).restart();
+            d.fx = d.x;
+            d.fy = d.y;
+        }
+        
+        function dragged(event, d) {
+            d.fx = event.x;
+            d.fy = event.y;
+        }
+        
+        function dragended(event, d) {
+            if (!event.active) simulation.alphaTarget(0);
+            d.fx = null;
+            d.fy = null;
+        }
+        
+        // Initialiser
+        initSimulation();
+        
+        // Notifier Flutter que le graph est prêt
+        FlutterGraph.postMessage(JSON.stringify({
+            type: 'graphReady'
+        }));
+    </script>
+</body>
+</html>

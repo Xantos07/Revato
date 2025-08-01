@@ -47,7 +47,7 @@ class DreamHomeScreen extends StatefulWidget {
 }
 
 class _DreamHomeScreenState extends State<DreamHomeScreen> {
-  int _selectedIndex = 0;
+  int _selectedIndex = 1;
 
   @override
   void initState() {
