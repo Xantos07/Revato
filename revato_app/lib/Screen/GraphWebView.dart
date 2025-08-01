@@ -190,15 +190,6 @@ class _GraphWebViewState extends State<GraphWebView> {
     );
   }
 
-  /// Centre le graphique dans la vue
-  void _centerGraph() {
-    if (_controller == null) return;
-
-    _controller!.runJavaScript('''
-      window.centerGraph();
-    ''');
-  }
-
   /// Effectue un zoom avant sur le graphique
   void _zoomIn() {
     if (_controller == null) return;
@@ -214,15 +205,6 @@ class _GraphWebViewState extends State<GraphWebView> {
 
     _controller!.runJavaScript('''
       window.zoomOut();
-    ''');
-  }
-
-  /// Remet la vue du graphique à sa position initiale
-  void _resetView() {
-    if (_controller == null) return;
-
-    _controller!.runJavaScript('''
-      window.resetView();
     ''');
   }
 
@@ -242,56 +224,6 @@ class _GraphWebViewState extends State<GraphWebView> {
             onPressed: _showStats,
             icon: Icon(Icons.analytics),
             tooltip: 'Statistiques',
-          ),
-
-          PopupMenuButton<String>(
-            onSelected: (value) {
-              switch (value) {
-                case 'zoom_in':
-                  _zoomIn();
-                  break;
-                case 'zoom_out':
-                  _zoomOut();
-                  break;
-                case 'reset_view':
-                  _resetView();
-                  break;
-              }
-            },
-            itemBuilder:
-                (context) => [
-                  PopupMenuItem(
-                    value: 'zoom_in',
-                    child: Row(
-                      children: [
-                        Icon(Icons.zoom_in),
-                        SizedBox(width: 8),
-                        Text('Zoom +'),
-                      ],
-                    ),
-                  ),
-                  PopupMenuItem(
-                    value: 'zoom_out',
-                    child: Row(
-                      children: [
-                        Icon(Icons.zoom_out),
-                        SizedBox(width: 8),
-                        Text('Zoom -'),
-                      ],
-                    ),
-                  ),
-                  PopupMenuItem(
-                    value: 'reset_view',
-                    child: Row(
-                      children: [
-                        Icon(Icons.refresh),
-                        SizedBox(width: 8),
-                        Text('Reset View'),
-                      ],
-                    ),
-                  ),
-                ],
-            icon: Icon(Icons.more_vert),
           ),
         ],
       ),
@@ -328,29 +260,15 @@ class _GraphWebViewState extends State<GraphWebView> {
                 FloatingActionButton.small(
                   onPressed: _zoomIn,
                   heroTag: "zoom_in",
-                  child: Icon(Icons.zoom_in),
                   tooltip: "Zoomer",
+                  child: Icon(Icons.zoom_in),
                 ),
                 SizedBox(height: 8),
                 FloatingActionButton.small(
                   onPressed: _zoomOut,
                   heroTag: "zoom_out",
-                  child: Icon(Icons.zoom_out),
                   tooltip: "Dézoomer",
-                ),
-                SizedBox(height: 8),
-                FloatingActionButton.small(
-                  onPressed: _centerGraph,
-                  heroTag: "center",
-                  child: Icon(Icons.center_focus_strong),
-                  tooltip: "Centrer",
-                ),
-                SizedBox(height: 8),
-                FloatingActionButton.small(
-                  onPressed: _resetView,
-                  heroTag: "reset",
-                  child: Icon(Icons.refresh),
-                  tooltip: "Réinitialiser",
+                  child: Icon(Icons.zoom_out),
                 ),
               ],
             ),

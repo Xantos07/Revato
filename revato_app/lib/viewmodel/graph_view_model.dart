@@ -159,38 +159,6 @@ class GraphViewModel extends ChangeNotifier {
     return strength.clamp(0.1, 1.0);
   }
 
-  /// Filtre les rêves par tag principal
-  Map<String, dynamic> getFilteredData(String? tagFilter) {
-    if (tagFilter == null || tagFilter.isEmpty) {
-      return {'nodes': _nodes, 'links': _links};
-    }
-
-    final filteredNodes =
-        _nodes.where((node) => node['primaryTag'] == tagFilter).toList();
-    final filteredNodeIds = filteredNodes.map((node) => node['id']).toSet();
-
-    final filteredLinks =
-        _links
-            .where(
-              (link) =>
-                  filteredNodeIds.contains(link['source']) &&
-                  filteredNodeIds.contains(link['target']),
-            )
-            .toList();
-
-    return {'nodes': filteredNodes, 'links': filteredLinks};
-  }
-
-  /// Obtient la liste de tous les tags uniques pour le filtre
-  List<String> getAllTags() {
-    final allTags = <String>{};
-    for (final node in _nodes) {
-      final tags = node['allTags'] as List<dynamic>? ?? [];
-      allTags.addAll(tags.cast<String>());
-    }
-    return allTags.toList()..sort();
-  }
-
   /// Obtient les tags les plus fréquents (pour interface utilisateur)
   List<MapEntry<String, int>> getTopTags({int limit = 10}) {
     final tagCounts = <String, int>{};
