@@ -36,6 +36,12 @@ class _GraphWebViewState extends State<GraphWebView> {
   }
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _sendThemeToWebView();
+  }
+
+  @override
   void dispose() {
     _filterViewModel.dispose();
     super.dispose();
@@ -69,6 +75,7 @@ class _GraphWebViewState extends State<GraphWebView> {
                 });
                 // Envoyer les données initiales
                 _sendDataToWebView();
+                _sendThemeToWebView();
               },
             ),
           )
@@ -88,31 +95,23 @@ class _GraphWebViewState extends State<GraphWebView> {
 
     // Appliquer les filtres avec l'instance locale
     final filteredDreams = _filterViewModel.filterDreams(_viewModel.dreams);
-
-    // Filtrer les nœuds selon les rêves filtrés
-    final filteredNodes =
-        _viewModel.nodes.where((node) {
-          final nodeId = int.tryParse(node['id']);
-          return nodeId != null &&
-              filteredDreams.any((dream) => dream.id == nodeId);
-        }).toList();
-
-    // Filtrer les liens pour ne garder que ceux entre les nœuds filtrés
-    final filteredNodeIds = filteredNodes.map((node) => node['id']).toSet();
-    final filteredLinks =
-        _viewModel.links
-            .where(
-              (link) =>
-                  filteredNodeIds.contains(link['source']) &&
-                  filteredNodeIds.contains(link['target']),
-            )
-            .toList();
-
-    final data = {'nodes': filteredNodes, 'links': filteredLinks};
+    final graphData = _viewModel.getFilteredGraphData(filteredDreams);
 
     _controller!.runJavaScript('''
-      window.updateGraph(${jsonEncode(data)});
+      window.updateGraph(${jsonEncode(graphData)});
     ''');
+  }
+
+  void _sendThemeToWebView() {
+    if (_controller == null) return;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final backgroundColorHex = isDark ? "#444444" : "#ffffff";
+    final textColorHex = isDark ? "#ffffff" : "#444444";
+    print('Sending theme to WebView : $backgroundColorHex');
+    _controller!.runJavaScript(
+      "window.setBackgroundColor('$backgroundColorHex');",
+    );
+    _controller!.runJavaScript("window.setTextNodeColor('$textColorHex');");
   }
 
   /// Traite les messages reçus de la WebView
@@ -228,7 +227,6 @@ class _GraphWebViewState extends State<GraphWebView> {
             WebViewWidget(controller: _controller!)
           else
             Container(
-              color: Colors.white,
               child: Center(
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,

@@ -39,7 +39,16 @@
                 .force("charge", d3.forceManyBody().strength(-300))
                 .force("center", d3.forceCenter(width / 2, height / 2));
         }
-        
+
+
+        window.setBackgroundColor = function(color) {
+        document.body.style.background = color;
+        d3.select("#graph").style("background", color);
+        };
+        window.setTextNodeColor = function(color) {
+            d3.selectAll("text").style("fill", color);
+        };
+
         // Fonction appelée depuis Flutter
         window.updateGraph = function(data) {
             nodes = data.nodes;
