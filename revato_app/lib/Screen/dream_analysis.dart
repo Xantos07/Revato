@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:revato_app/widgets/dream_app_bar.dart';
 import 'package:revato_app/viewmodel/graph_view_model.dart';
-import 'GraphWebView.dart';
+import 'graph_web_view.dart';
 
 class DreamAnalysis extends StatefulWidget {
   const DreamAnalysis({super.key});

@@ -75,15 +75,21 @@ class DreamDetail extends StatelessWidget {
                       for (final redaction in dream.redactions) ...[
                         Text(
                           redaction.displayName,
-                          style: const TextStyle(
-                            fontSize: 16,
+                          style: TextStyle(
+                            fontSize: 22,
                             fontWeight: FontWeight.bold,
+                            color: Theme.of(context).colorScheme.primary,
                           ),
                         ),
                         const SizedBox(height: 4),
                         Text(
                           redaction.content,
                           style: const TextStyle(fontSize: 16),
+                        ),
+                        Container(
+                          margin: const EdgeInsets.symmetric(vertical: 16),
+                          height: 1,
+                          color: Theme.of(context).dividerColor,
                         ),
                         const SizedBox(height: 12),
                       ],
@@ -95,11 +101,12 @@ class DreamDetail extends StatelessWidget {
                     ],
                     if (dream.tags.isNotEmpty) ...[
                       const SizedBox(height: 16),
-                      const Text(
+                      Text(
                         'Tags :',
                         style: TextStyle(
-                          fontSize: 16,
+                          fontSize: 22,
                           fontWeight: FontWeight.bold,
+                          color: Theme.of(context).colorScheme.primary,
                         ),
                       ),
                       const SizedBox(height: 8),

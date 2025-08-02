@@ -173,11 +173,6 @@ class _GraphWebViewState extends State<GraphWebView> {
                 Text(
                   'Connexions moyennes par rêve: ${stats['avgConnectionsPerDream'].toStringAsFixed(1)}',
                 ),
-                SizedBox(height: 16),
-                Text(
-                  'Distribution par thème:',
-                  style: TextStyle(fontWeight: FontWeight.bold),
-                ),
               ],
             ),
             actions: [

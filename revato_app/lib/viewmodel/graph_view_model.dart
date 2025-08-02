@@ -64,19 +64,12 @@ class GraphViewModel extends ChangeNotifier {
         'tagsCount': dream.tags.length,
         'redactionsCount': dream.redactions.length,
         'allTags': dream.tags.map((tag) => tag.name).toList(),
-        'color': _getDreamColorHex(),
+        'color': getDreamColor(dream),
       });
     }
 
     // Créer des liens basés sur des critères (exemple: proximité temporelle, mots-clés similaires)
     _generateLinks();
-  }
-
-  /// Obtient la couleur d'un rêve pour le nœud
-  /// Utilise une logique simple basée sur le nombre de tags
-  String _getDreamColorHex() {
-    // Exemple : retourne "#FF4AB1" (rose)
-    return '#FF4AB1';
   }
 
   /// Extrait la description principale d'un rêve depuis ses rédactions
@@ -174,5 +167,31 @@ class GraphViewModel extends ChangeNotifier {
       'avgConnectionsPerDream':
           _dreams.isNotEmpty ? _links.length / _dreams.length : 0.0,
     };
+  }
+
+  String getDreamColor(Dream dream) {
+    if (dream.tags.isEmpty) {
+      return '#BDBDBD';
+    }
+
+    final Map<String, int> categoryCount = {};
+    final Map<String, Color> categoryColors = {};
+
+    for (final tag in dream.tags) {
+      categoryCount[tag.categoryName] =
+          (categoryCount[tag.categoryName] ?? 0) + 1;
+      categoryColors[tag.categoryName] =
+          tag.color.isNotEmpty
+              ? Color(int.parse(tag.color.replaceAll('#', '0xFF')))
+              : const Color(0xFFBDBDBD);
+    }
+
+    String dominantCategory =
+        categoryCount.entries.reduce((a, b) => a.value >= b.value ? a : b).key;
+
+    final Color color =
+        categoryColors[dominantCategory] ?? const Color(0xFFBDBDBD);
+
+    return '#${color.value.toRadixString(16).padLeft(8, '0').substring(2).toUpperCase()}';
   }
 }

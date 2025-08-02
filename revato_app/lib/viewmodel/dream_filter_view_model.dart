@@ -14,14 +14,12 @@ import 'package:revato_app/services/tag_service.dart';
 
 class DreamFilterViewModel extends ChangeNotifier {
   // **INJECTION DE DÉPENDANCE**
-  final DreamService _dreamService;
   final TagService _tagService;
 
   /// **CONSTRUCTEUR AVEC INJECTION DE DÉPENDANCE**
   /// Permet une meilleure testabilité et découplage
   DreamFilterViewModel({DreamService? dreamService, TagService? tagService})
-    : _dreamService = dreamService ?? DreamService(),
-      _tagService = tagService ?? TagService() {
+    : _tagService = tagService ?? TagService() {
     _initializeAsync();
   }
 
