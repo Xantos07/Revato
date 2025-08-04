@@ -5,6 +5,8 @@ import 'package:provider/provider.dart';
 import 'package:revato_app/viewmodel/dream_filter_view_model.dart';
 import 'package:revato_app/widgets/DreamDetail/DreamDetail.dart';
 import 'package:revato_app/widgets/DreamFilter/filter_panel.dart';
+import 'package:revato_app/widgets/DreamFilter/search_bar.dart';
+import 'package:revato_app/widgets/dream_app_bar.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import 'package:revato_app/viewmodel/graph_view_model.dart';
 
@@ -23,27 +25,32 @@ class _GraphWebViewState extends State<GraphWebView> {
   bool _isLoading = true;
   bool _isInitialized = false;
   late GraphViewModel _viewModel;
-  late final DreamFilterViewModel _filterViewModel;
+  DreamFilterViewModel? _filterViewModel;
   // ========== LIFECYCLE ==========
 
   @override
   void initState() {
     super.initState();
     _viewModel = widget.viewModel ?? GraphViewModel();
-    _filterViewModel = DreamFilterViewModel();
+    // Ne pas créer une nouvelle instance, on récupère celle du Provider
     _initWebView();
     _loadDreams();
   }
 
   @override
   void didChangeDependencies() {
+    // Récupérer le DreamFilterViewModel du Provider parent
+    _filterViewModel = Provider.of<DreamFilterViewModel>(
+      context,
+      listen: false,
+    );
     super.didChangeDependencies();
     _sendThemeToWebView();
   }
 
   @override
   void dispose() {
-    _filterViewModel.dispose();
+    // Ne pas disposer le Provider parent ici
     super.dispose();
   }
 
@@ -94,7 +101,8 @@ class _GraphWebViewState extends State<GraphWebView> {
     if (_controller == null) return;
 
     // Appliquer les filtres avec l'instance locale
-    final filteredDreams = _filterViewModel.filterDreams(_viewModel.dreams);
+    if (_filterViewModel == null) return;
+    final filteredDreams = _filterViewModel!.filterDreams(_viewModel.dreams);
     final graphData = _viewModel.getFilteredGraphData(filteredDreams);
 
     _controller!.runJavaScript('''
@@ -104,10 +112,21 @@ class _GraphWebViewState extends State<GraphWebView> {
 
   void _sendThemeToWebView() {
     if (_controller == null) return;
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final backgroundColorHex = isDark ? "#444444" : "#ffffff";
-    final textColorHex = isDark ? "#ffffff" : "#444444";
-    print('Sending theme to WebView : $backgroundColorHex');
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
+    // Récupérer les vraies couleurs du thème
+    final backgroundColor = colorScheme.surface;
+    final textColor = colorScheme.onSurface;
+
+    // Convertir en hex
+    final backgroundColorHex =
+        '#${backgroundColor.value.toRadixString(16).substring(2)}';
+    final textColorHex = '#${textColor.value.toRadixString(16).substring(2)}';
+
+    print(
+      'Sending theme to WebView - Background: $backgroundColorHex, Text: $textColorHex',
+    );
     _controller!.runJavaScript(
       "window.setBackgroundColor('$backgroundColorHex');",
     );
@@ -206,25 +225,13 @@ class _GraphWebViewState extends State<GraphWebView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text('Graphique des Rêves'),
-        actions: [
-          IconButton(
-            onPressed: () => _showFilterPanel(context),
-            icon: Icon(Icons.filter_alt),
-            tooltip: 'Filtres',
-          ),
-          IconButton(
-            onPressed: _showStats,
-            icon: Icon(Icons.analytics),
-            tooltip: 'Statistiques',
-          ),
-        ],
-      ),
       body: Stack(
         children: [
           if (_controller != null && _isInitialized)
-            WebViewWidget(controller: _controller!)
+            Padding(
+              padding: EdgeInsets.only(),
+              child: WebViewWidget(controller: _controller!),
+            )
           else
             Container(
               child: Center(

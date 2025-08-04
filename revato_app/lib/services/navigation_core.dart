@@ -64,6 +64,7 @@ class NavigationCore {
 
   /// Naviguer vers l'édition d'un rêve
   void navigateToEditDream(Dream dream, {VoidCallback? onDreamUpdated}) async {
+    // Ouvre la page d'édition du rêve
     final result = await _navigator?.push<Dream>(
       MaterialPageRoute(
         builder:

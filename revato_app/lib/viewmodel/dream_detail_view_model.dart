@@ -27,8 +27,6 @@ class DreamDetailViewModel extends ChangeNotifier {
   }
 
   Future<void> viewDream(Dream dream) async {
-    // Navigation vers les détails du rêve
-    print('Navigating to dream details for: ${dream.title}');
     _navigationService.navigateToDreamDetail(dream);
   }
 

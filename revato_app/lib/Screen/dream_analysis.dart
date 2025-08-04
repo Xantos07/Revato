@@ -27,30 +27,10 @@ class _DreamAnalysisScreenState extends State<DreamAnalysis> {
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 20),
+
               const Text(
                 'Visualisez vos rêves sous forme de graphique interactif',
                 textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 40),
-              ElevatedButton.icon(
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder:
-                          (context) =>
-                              GraphWebView(viewModel: GraphViewModel()),
-                    ),
-                  );
-                },
-                icon: const Icon(Icons.analytics),
-                label: const Text('Voir le graphique des rêves'),
-                style: ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 24,
-                    vertical: 12,
-                  ),
-                ),
               ),
             ],
           ),

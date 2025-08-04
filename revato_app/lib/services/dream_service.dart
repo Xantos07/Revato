@@ -17,6 +17,8 @@ class DreamService {
       final dream = await _buildDreamWithAssociations(db, Dream.fromMap(row));
       dreams.add(dream);
     }
+
+    print('Récupération de ${dreams.length} rêves avec tags et rédactions');
     return dreams;
   }
 
@@ -244,7 +246,7 @@ class DreamService {
     required bool isUpdate,
   }) async {
     final redactionsByCategory =
-        data['redactionByCategory'] as Map<String, String>;
+        data['redactionsByCategory'] as Map<String, String>;
 
     for (final entry in redactionsByCategory.entries) {
       final categoryName = entry.key;

@@ -7,7 +7,6 @@ import 'package:revato_app/widgets/Dream_Carousel/DreamCarouselStepper.dart';
 import 'package:revato_app/widgets/Dream_Carousel/DreamNotePage.dart';
 import 'package:revato_app/widgets/Dream_Carousel/DreamTagsPage.dart';
 import 'package:revato_app/widgets/Dream_Carousel/DreamTitlePage.dart';
-import 'package:revato_app/services/dream_service.dart';
 import 'package:revato_app/services/navigation_core.dart';
 import 'package:revato_app/widgets/dream_app_bar.dart';
 
@@ -44,7 +43,7 @@ class _DreamWritingCarouselState extends State<DreamWritingCarousel> {
     else {
       // Logique par défaut : sauvegarder et naviguer
       try {
-        await DreamService().insertDreamWithData(data);
+        await DreamWritingViewModel().insertDreamWithData(data);
         if (mounted) {
           ScaffoldMessenger.of(
             context,
