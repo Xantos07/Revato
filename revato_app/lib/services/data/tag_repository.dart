@@ -2,7 +2,7 @@ import 'package:revato_app/database/database.dart';
 import 'package:revato_app/model/redaction_model.dart';
 import 'package:revato_app/model/tag_model.dart';
 
-class TagService {
+class TagRepository {
   /// Renomme un tag dans une catégorie
   Future<void> renameTag(
     String oldName,
@@ -103,28 +103,6 @@ class TagService {
     return results.map((row) => TagCategory.fromMap(row)).toList();
   }
 
-  // Méthode pour récupérer toutes les catégories de tags
-  Future<List<TagCategory>> getAllTagCategories() async {
-    final db = await AppDatabase().database;
-    final results = await db.query('tag_categories', orderBy: 'name');
-    return results.map((row) => TagCategory.fromMap(row)).toList();
-  }
-
-  // Méthode pour récupérer toutes les catégories de rédaction
-  Future<List<RedactionCategory>> getAllRedactionCategories() async {
-    final db = await AppDatabase().database;
-    final results = await db.query('redaction_categories', orderBy: 'name');
-    return results
-        .map(
-          (row) => RedactionCategory(
-            name: row['name'] as String,
-            displayName: row['display_name'] as String,
-            description: row['description'] as String? ?? '',
-          ),
-        )
-        .toList();
-  }
-
   // Méthode pour récupérer les couleurs des catégories de tags
   Future<Map<String, String>> getTagCategoryColors() async {
     final db = await AppDatabase().database;
@@ -203,28 +181,5 @@ class TagService {
       return result.first['category_name'] as String;
     }
     return null;
-  }
-
-  /// **RENOMMAGE GLOBAL D'UN TAG**
-  /// Renomme un tag dans tous les rêves où il apparaît
-  Future<bool> renameTagGlobally(String oldName, String newName) async {
-    try {
-      // Récupérer la catégorie du tag
-      final category = await getTagCategory(oldName);
-      if (category == null) {
-        print('Tag "$oldName" not found in any category');
-        return false;
-      }
-
-      // Renommer le tag globalement
-      await renameTag(oldName, newName, category);
-      print(
-        'Tag renamed globally: "$oldName" -> "$newName" in category "$category"',
-      );
-      return true;
-    } catch (e) {
-      print('Error renaming tag globally: $e');
-      return false;
-    }
   }
 }

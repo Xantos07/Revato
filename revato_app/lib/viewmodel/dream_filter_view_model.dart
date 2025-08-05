@@ -1,25 +1,22 @@
 import 'package:flutter/material.dart';
-import 'package:revato_app/services/dream_service.dart';
+import 'package:revato_app/services/business/category_business_service.dart';
+import 'package:revato_app/services/business/tag_business_service.dart';
 import 'package:revato_app/model/tag_model.dart';
 import 'package:revato_app/model/dream_model.dart';
-import 'package:revato_app/services/tag_service.dart';
-
-/// **VIEW MODEL POUR LE FILTRAGE DES RÊVES**
-///
-/// RESPONSABILITÉS (pattern MVVM) :
-/// - Gère l'état des filtres et recherche (Model → View)
-/// - Expose les données formatées pour l'UI (View binding)
-/// - Coordonne les services mais ne contient pas de logique métier
-/// - Notifie les changements d'état à la View via ChangeNotifier
 
 class DreamFilterViewModel extends ChangeNotifier {
   // **INJECTION DE DÉPENDANCE**
-  final TagService _tagService;
+  final TagBusinessService _tagBusinessService;
+  final CategoryBusinessService _categoryBusinessService;
 
   /// **CONSTRUCTEUR AVEC INJECTION DE DÉPENDANCE**
   /// Permet une meilleure testabilité et découplage
-  DreamFilterViewModel({DreamService? dreamService, TagService? tagService})
-    : _tagService = tagService ?? TagService() {
+  DreamFilterViewModel({
+    CategoryBusinessService? categoryBusinessService,
+    TagBusinessService? tagBusinessService,
+  }) : _categoryBusinessService =
+           categoryBusinessService ?? CategoryBusinessService(),
+       _tagBusinessService = tagBusinessService ?? TagBusinessService() {
     _initializeAsync();
   }
 
@@ -78,11 +75,14 @@ class DreamFilterViewModel extends ChangeNotifier {
     notifyListeners();
 
     try {
-      _availableTagCategories = await _tagService.getAllTagCategories();
+      _availableTagCategories = await _categoryBusinessService
+          .getAllTagCategories(orderBy: 'name');
 
       // Charger les tags pour chaque catégorie
       for (final category in _availableTagCategories) {
-        final tags = await _tagService.getTagsForCategory(category.name);
+        final tags = await _tagBusinessService.getTagsForCategory(
+          category.name,
+        );
         _tagsByCategory[category.name] = tags;
       }
     } catch (e) {
@@ -177,20 +177,15 @@ class DreamFilterViewModel extends ChangeNotifier {
     if (_selectedTags.isNotEmpty) {
       filteredDreams =
           filteredDreams.where((dream) {
-            // Debug: affichage des tags du rêve
-            final dreamTagNames = dream.tags.map((tag) => tag.name).toList();
-
             // Vérifier si le rêve contient au moins un des tags sélectionnés
             final hasMatchingTag = _selectedTags.any((selectedTag) {
               final foundTag = dream.tags.any((dreamTag) {
                 final match = dreamTag.name == selectedTag;
-
                 return match;
               });
               return foundTag;
             });
 
-            debugPrint('---');
             return hasMatchingTag;
           }).toList();
     }

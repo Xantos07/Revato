@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:revato_app/services/text_cleaning_service.dart';
+import 'package:revato_app/services/utils/text_cleaning_service.dart';
 import '../../viewmodel/carousel_editor_view_model.dart';
 
 /// **DIALOG D'AJOUT DE RÉDACTION**

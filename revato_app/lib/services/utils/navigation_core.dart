@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:revato_app/model/dream_model.dart';
 import 'package:revato_app/Screen/dream_writing_carousel.dart';
+import 'package:revato_app/services/business/dream_business_service.dart';
 import 'package:revato_app/widgets/DreamDetail/DreamDetail.dart';
-import 'package:revato_app/services/dream_service.dart';
 
 // A refactoriser :)
 
@@ -72,9 +72,9 @@ class NavigationCore {
               initialDream: dream,
               onSubmit: (data) async {
                 try {
-                  await DreamService().UpdateDreamWithData(dream.id, data);
+                  await DreamBusinessService().updateDream(dream.id, data);
                   // Récupère le rêve à jour
-                  final updatedDream = await DreamService()
+                  final updatedDream = await DreamBusinessService()
                       .getDreamWithTagsAndRedactions(dream.id);
                   // Ferme la page d'édition et retourne le rêve à jour
                   Navigator.of(context).pop(updatedDream);

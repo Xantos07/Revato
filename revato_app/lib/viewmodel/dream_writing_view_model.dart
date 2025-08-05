@@ -3,28 +3,24 @@ import 'package:flutter/material.dart';
 import 'package:revato_app/model/dream_model.dart';
 import 'package:revato_app/model/redaction_model.dart';
 import 'package:revato_app/model/tag_model.dart';
-import 'package:revato_app/services/dream_service.dart';
-import 'package:revato_app/services/dream_writing_service.dart';
-import 'package:revato_app/services/tag_service.dart';
-import 'package:revato_app/services/carousel_editor_service.dart';
+import 'package:revato_app/services/business/dream_business_service.dart';
+import 'package:revato_app/services/business/tag_business_service.dart';
+import 'package:revato_app/services/business/category_business_service.dart';
 
 class DreamWritingViewModel extends ChangeNotifier {
-  final DreamService _dreamService;
-  final TagService _tagService;
-  final DreamWritingService _dreamWritingService;
-  final CarouselEditorService _carouselEditorService;
+  final DreamBusinessService _dreamBusinessService;
+  final TagBusinessService _tagBusinessService;
+  final CategoryBusinessService _categoryBusinessService;
 
   /// **CONSTRUCTEUR AVEC INJECTION DE DÉPENDANCE**
   DreamWritingViewModel({
-    DreamService? dreamService,
-    TagService? tagService,
-    CarouselEditorService? carouselEditorService,
-    DreamWritingService? dreamWritingService,
-  }) : _dreamService = dreamService ?? DreamService(),
-       _tagService = tagService ?? TagService(),
-       _carouselEditorService =
-           carouselEditorService ?? CarouselEditorService(),
-       _dreamWritingService = dreamWritingService ?? DreamWritingService() {
+    DreamBusinessService? dreamService,
+    TagBusinessService? tagBusinessService,
+    CategoryBusinessService? categoryBusinessService,
+  }) : _dreamBusinessService = dreamService ?? DreamBusinessService(),
+       _tagBusinessService = tagBusinessService ?? TagBusinessService(),
+       _categoryBusinessService =
+           categoryBusinessService ?? CategoryBusinessService() {
     _initializeAsync();
   }
 
@@ -69,11 +65,14 @@ class DreamWritingViewModel extends ChangeNotifier {
     notifyListeners(); // Notifie l'UI pour afficher un indicateur de chargement
 
     try {
-      // Utilise le CarouselEditorService pour récupérer seulement les catégories visibles
+      // Utilise le CategoryBusinessService pour récupérer les catégories visibles
+      final categoriesData =
+          await _categoryBusinessService.getVisibleCategoriesForDisplay();
+
       _availableCategories =
-          await _carouselEditorService.getVisibleTagCategories();
+          categoriesData['tagCategories'] as List<TagCategory>;
       _availableCategoriesRedaction =
-          await _carouselEditorService.getVisibleRedactionCategories();
+          categoriesData['redactionCategories'] as List<RedactionCategory>;
 
       // **DEBUG** - Vérification des données chargées
       debugPrint(
@@ -91,13 +90,13 @@ class DreamWritingViewModel extends ChangeNotifier {
   }
 
   Future<void> insertDreamWithData(Map<String, dynamic> data) {
-    return _dreamService.insertDreamWithData(data);
+    return _dreamBusinessService.createDream(data);
   }
 
   /// **RÉCUPÉRATION DES TAGS** pour une catégorie spécifique
   /// Méthode asynchrone qui interroge la base de données
   Future<List<String>> getTagsForCategory(String categoryName) {
-    return _tagService.getTagsForCategory(categoryName);
+    return _tagBusinessService.getTagsForCategory(categoryName);
   }
 
   /// **RÉCUPÉRATION DES TAGS LOCAUX** (stockés temporairement)
@@ -113,7 +112,9 @@ class DreamWritingViewModel extends ChangeNotifier {
 
   void GetDreamWithId(int dreamId) async {
     try {
-      final dream = await _dreamService.getDreamWithTagsAndRedactions(dreamId);
+      final dream = await _dreamBusinessService.getDreamWithTagsAndRedactions(
+        dreamId,
+      );
       if (dream != null) {
         initializeWithDream(dream);
       } else {
@@ -142,7 +143,7 @@ class DreamWritingViewModel extends ChangeNotifier {
   /// **MISE À JOUR DES TAGS**
   /// Sauvegarde les tags sélectionnés pour une catégorie
   void setTagsForCategory(String category, List<String> tags) {
-    final validTags = _dreamWritingService.filterValidTags(tags);
+    final validTags = _dreamBusinessService.filterValidTags(tags);
     _tagsByCategory[category] = validTags;
     notifyListeners();
   }
@@ -150,7 +151,7 @@ class DreamWritingViewModel extends ChangeNotifier {
   ///
 
   Map<String, dynamic> collectData() {
-    return _dreamWritingService.formatDreamData(
+    return _dreamBusinessService.formatDreamData(
       _dreamTitle,
       _notesByCategory,
       _tagsByCategory,
@@ -165,7 +166,7 @@ class DreamWritingViewModel extends ChangeNotifier {
   }
 
   void initializeWithDream(Dream dream) {
-    final state = _dreamWritingService.mapDreamToEditingState(
+    final state = _dreamBusinessService.mapDreamToEditingState(
       dream,
       _availableCategories,
       _availableCategoriesRedaction,
@@ -183,9 +184,12 @@ class DreamWritingViewModel extends ChangeNotifier {
   /// Renomme un tag globalement dans tous les rêves
   Future<bool> renameTagGlobally(String oldName, String newName) async {
     try {
-      final success = await _tagService.renameTagGlobally(oldName, newName);
+      final success = await TagBusinessService().renameTagGlobally(
+        oldName,
+        newName,
+      );
       if (success) {
-        _dreamWritingService.addTagLocally(_tagsByCategory, oldName, newName);
+        _dreamBusinessService.addTagLocally(_tagsByCategory, oldName, newName);
         notifyListeners();
       }
       return success;
@@ -204,7 +208,7 @@ class DreamWritingViewModel extends ChangeNotifier {
   /// Récupère tous les tags existants pour l'autocomplétion
   Future<List<String>> getAllAvailableTags() async {
     try {
-      return await _tagService.getAllAvailableTags();
+      return await _tagBusinessService.getAllAvailableTags();
     } catch (e) {
       debugPrint('Erreur lors de la récupération des tags: $e');
       return [];

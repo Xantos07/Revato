@@ -1,17 +1,17 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:revato_app/model/dream_model.dart';
-import 'package:revato_app/services/dream_service.dart';
-import 'package:revato_app/services/graph_service.dart';
+import 'package:revato_app/services/business/dream_business_service.dart';
+import 'package:revato_app/services/utils/graph_service.dart';
 
 class GraphViewModel extends ChangeNotifier {
-  final DreamService _dreamService;
+  final DreamBusinessService _dreamBusinessService;
   final GraphViewService _graphViewService;
 
   GraphViewModel({
-    DreamService? dreamService,
+    DreamBusinessService? dreamService,
     GraphViewService? graphViewService,
-  }) : _dreamService = dreamService ?? DreamService(),
+  }) : _dreamBusinessService = dreamService ?? DreamBusinessService(),
        _graphViewService = graphViewService ?? GraphViewService();
 
   // État privé
@@ -35,7 +35,7 @@ class GraphViewModel extends ChangeNotifier {
     notifyListeners();
 
     try {
-      _dreams = await _dreamService.getAllDreamsWithTagsAndRedactions();
+      _dreams = await _dreamBusinessService.getAllDreamsWithTagsAndRedactions();
       _nodes = _graphViewService.generateGraphData(_dreams);
       _links = _graphViewService.generateLinks(_dreams);
       _isLoading = false;

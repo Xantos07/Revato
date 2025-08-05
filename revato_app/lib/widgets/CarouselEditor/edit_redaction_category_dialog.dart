@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:revato_app/widgets/CarouselEditor/carousel_editor_widgets.dart';
 import '../../model/redaction_model.dart';
 import '../../viewmodel/carousel_editor_view_model.dart';
-import 'custom_color_picker.dart';
 
 /// **DIALOG D'ÉDITION DE CATÉGORIE TAG**
 class EditRedactionCategoryDialog extends StatefulWidget {
@@ -32,7 +30,7 @@ class _EditRedactionCategoryDialogState
       text: widget.category.displayName,
     );
     _descriptionController = TextEditingController(
-      text: widget.category.description ?? '',
+      text: widget.category.description,
     );
   }
 
@@ -87,6 +85,11 @@ class _EditRedactionCategoryDialogState
           onPressed: () => Navigator.pop(context),
           child: const Text('Annuler'),
         ),
+        TextButton(
+          onPressed: _deleteCategory,
+          style: TextButton.styleFrom(foregroundColor: Colors.red),
+          child: const Text('Supprimer'),
+        ),
         ElevatedButton(
           onPressed: _saveChanges,
           child: const Text('Sauvegarder'),
@@ -129,6 +132,56 @@ class _EditRedactionCategoryDialogState
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Erreur lors de la modification: $e')),
         );
+      }
+    }
+  }
+
+  void _deleteCategory() async {
+    // Demander confirmation avant suppression
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder:
+          (context) => AlertDialog(
+            title: const Text('Confirmer la suppression'),
+            content: Text(
+              'Êtes-vous sûr de vouloir supprimer la catégorie de rédaction "${widget.category.displayName}" ?\n\nCette action est irréversible et supprimera également toutes les rédactions associées à cette catégorie.',
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context, false),
+                child: const Text('Annuler'),
+              ),
+              ElevatedButton(
+                onPressed: () => Navigator.pop(context, true),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.red,
+                  foregroundColor: Colors.white,
+                ),
+                child: const Text('Supprimer'),
+              ),
+            ],
+          ),
+    );
+
+    if (confirmed == true && mounted) {
+      try {
+        // Supprimer via le ViewModel
+        await widget.viewModel.deleteRedactionCategory(widget.category.id!);
+
+        if (mounted) {
+          Navigator.pop(context);
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Catégorie de rédaction supprimée avec succès'),
+            ),
+          );
+        }
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Erreur lors de la suppression: $e')),
+          );
+        }
       }
     }
   }

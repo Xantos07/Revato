@@ -1,14 +1,14 @@
 import 'package:revato_app/model/dream_model.dart';
-import 'package:revato_app/services/dream_service.dart';
+import 'package:revato_app/services/business/dream_business_service.dart';
 
 class DreamListViewModel {
-  final DreamService _dreamService;
+  final DreamBusinessService _dreamBusinessService;
 
   /// **CONSTRUCTEUR AVEC INJECTION DE DÉPENDANCE**
-  DreamListViewModel({DreamService? dreamService})
-    : _dreamService = dreamService ?? DreamService();
+  DreamListViewModel({DreamBusinessService? dreamService})
+    : _dreamBusinessService = dreamService ?? DreamBusinessService();
 
   Future<List<Dream>> getAllDreamsWithTagsAndRedactions() {
-    return _dreamService.getAllDreamsWithTagsAndRedactions();
+    return _dreamBusinessService.getAllDreamsWithTagsAndRedactions();
   }
 }

@@ -1,14 +1,14 @@
-// Imports nécessaires pour accéder à la base de données et aux modèles
 import 'package:revato_app/database/database.dart';
 import 'package:revato_app/model/dream_model.dart';
 import 'package:revato_app/model/redaction_individual_model.dart';
 import 'package:revato_app/model/tag_individual_model.dart';
 import 'package:sqflite/sqflite.dart';
 
-/// **SERVICE DREAM**
-class DreamService {
+/// Repository pour les opérations CRUD des rêves
+class DreamRepository {
+  /// **RÉCUPÉRATION - TOUS LES RÊVES**
   /// Récupère tous les rêves avec leurs données associées
-  Future<List<Dream>> getAllDreamsWithTagsAndRedactions() async {
+  Future<List<Dream>> getAllDreamsWithAssociations() async {
     final db = await AppDatabase().database;
     final results = await db.query('dreams', orderBy: 'created_at DESC');
 
@@ -18,12 +18,12 @@ class DreamService {
       dreams.add(dream);
     }
 
-    print('Récupération de ${dreams.length} rêves avec tags et rédactions');
     return dreams;
   }
 
+  /// **RÉCUPÉRATION - RÊVE SPÉCIFIQUE**
   /// Récupère un rêve spécifique avec ses données associées
-  Future<Dream?> getDreamWithTagsAndRedactions(int dreamId) async {
+  Future<Dream?> getDreamWithAssociations(int dreamId) async {
     final db = await AppDatabase().database;
 
     final results = await db.query(
@@ -39,11 +39,12 @@ class DreamService {
     return await _buildDreamWithAssociations(db, dream);
   }
 
+  /// **CRÉATION - NOUVEAU RÊVE**
   /// Insère un nouveau rêve avec ses données associées
-  Future<void> insertDreamWithData(Map<String, dynamic> data) async {
+  Future<int> insertDreamWithData(Map<String, dynamic> data) async {
     final db = await AppDatabase().database;
 
-    //Insérer le rêve
+    // Insérer le rêve principal
     final dreamId = await db.insert('dreams', {
       'title': data['title'],
       'created_at': DateTime.now().toIso8601String(),
@@ -52,16 +53,19 @@ class DreamService {
 
     // Sauvegarder les données associées
     await _saveDreamAssociations(db, dreamId, data, isUpdate: false);
+
+    return dreamId;
   }
 
+  /// **MISE À JOUR - RÊVE EXISTANT**
   /// Met à jour un rêve existant avec ses données associées
-  Future<void> UpdateDreamWithData(
+  Future<void> updateDreamWithData(
     int dreamId,
     Map<String, dynamic> data,
   ) async {
     final db = await AppDatabase().database;
 
-    // Mettre à jour le rêve
+    // Mettre à jour le rêve principal
     await db.update(
       'dreams',
       {'title': data['title'], 'updated_at': DateTime.now().toIso8601String()},
@@ -73,7 +77,8 @@ class DreamService {
     await _saveDreamAssociations(db, dreamId, data, isUpdate: true);
   }
 
-  /// DREAM Service
+  /// **SUPPRESSION - RÊVE COMPLET**
+  /// Supprime un rêve et toutes ses associations
   Future<bool> deleteDream(int dreamId) async {
     try {
       final db = await AppDatabase().database;
@@ -102,7 +107,8 @@ class DreamService {
     }
   }
 
-  /// **FONCTION PRIVÉE COMMUNE**
+  /// **MÉTHODES PRIVÉES - CONSTRUCTION ET SAUVEGARDE**
+
   /// Charge les tags et rédactions pour un rêve donné
   Future<Dream> _buildDreamWithAssociations(Database db, Dream dream) async {
     // **RÉCUPÉRATION DES TAGS**
@@ -156,7 +162,6 @@ class DreamService {
     return dream;
   }
 
-  /// **FONCTION PRIVÉE COMMUNE**
   /// Sauvegarde les tags et rédactions pour un rêve
   Future<void> _saveDreamAssociations(
     Database db,
@@ -171,14 +176,15 @@ class DreamService {
     await _saveDreamRedactions(db, dreamId, data, isUpdate: isUpdate);
   }
 
-  /// **FONCTION PRIVÉE - GESTION DES TAGS**
+  /// Sauvegarde les tags pour un rêve
   Future<void> _saveDreamTags(
     Database db,
     int dreamId,
     Map<String, dynamic> data, {
     required bool isUpdate,
   }) async {
-    final tagsByCategory = data['tagsByCategory'] as Map<String, List<String>>;
+    final tagsByCategory =
+        data['tagsByCategory'] as Map<String, List<String>>? ?? {};
 
     for (final entry in tagsByCategory.entries) {
       final categoryName = entry.key;
@@ -238,7 +244,7 @@ class DreamService {
     }
   }
 
-  /// **FONCTION PRIVÉE - GESTION DES RÉDACTIONS**
+  /// Sauvegarde les rédactions pour un rêve
   Future<void> _saveDreamRedactions(
     Database db,
     int dreamId,
@@ -246,7 +252,7 @@ class DreamService {
     required bool isUpdate,
   }) async {
     final redactionsByCategory =
-        data['redactionsByCategory'] as Map<String, String>;
+        data['redactionsByCategory'] as Map<String, String>? ?? {};
 
     for (final entry in redactionsByCategory.entries) {
       final categoryName = entry.key;

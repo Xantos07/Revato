@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:revato_app/model/dream_model.dart';
-import 'package:revato_app/services/navigation_core.dart';
+import 'package:revato_app/services/utils/navigation_core.dart';
 import 'package:revato_app/viewmodel/dream_detail_view_model.dart';
 import 'package:revato_app/widgets/DreamList/DreamChipsRow.dart';
 import 'package:revato_app/widgets/Utils.dart';

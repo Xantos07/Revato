@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:revato_app/services/business/category_business_service.dart';
 import '../model/redaction_model.dart';
 import '../model/tag_model.dart';
-import '../services/carousel_editor_service.dart';
 
 class CarouselEditorViewModel extends ChangeNotifier {
-  final CarouselEditorService _service = CarouselEditorService();
+  final CategoryBusinessService _categoryBusinessService;
+
+  CarouselEditorViewModel({CategoryBusinessService? categoryBusinessService})
+    : _categoryBusinessService =
+          categoryBusinessService ?? CategoryBusinessService();
 
   List<RedactionCategory> _redactionCategories = [];
   List<TagCategory> _tagCategories = [];
@@ -21,8 +25,11 @@ class CarouselEditorViewModel extends ChangeNotifier {
     notifyListeners();
 
     try {
-      _redactionCategories = await _service.getAllRedactionCategories();
-      _tagCategories = await _service.getAllTagCategories();
+      _redactionCategories =
+          await _categoryBusinessService.getAllRedactionCategories();
+      _tagCategories = await _categoryBusinessService.getAllTagCategories(
+        orderBy: 'display_order ASC, id ASC',
+      );
     } catch (e) {
       debugPrint('Erreur lors du chargement des catégories: $e');
     } finally {
@@ -33,7 +40,10 @@ class CarouselEditorViewModel extends ChangeNotifier {
 
   /// **GESTION DE LA VISIBILITÉ**
   Future<void> toggleRedactionDisplay(int categoryId, bool isDisplay) async {
-    await _service.toggleRedactionCategoryDisplay(categoryId, isDisplay);
+    await _categoryBusinessService.toggleRedactionCategoryDisplay(
+      categoryId,
+      isDisplay,
+    );
 
     // Mettre à jour localement
     final index = _redactionCategories.indexWhere((c) => c.id == categoryId);
@@ -52,7 +62,10 @@ class CarouselEditorViewModel extends ChangeNotifier {
   }
 
   Future<void> toggleTagDisplay(int categoryId, bool isDisplay) async {
-    await _service.toggleTagCategoryDisplay(categoryId, isDisplay);
+    await _categoryBusinessService.toggleRedactionCategoryDisplay(
+      categoryId,
+      isDisplay,
+    );
 
     // Mettre à jour localement
     final index = _tagCategories.indexWhere((c) => c.id == categoryId);
@@ -85,7 +98,7 @@ class CarouselEditorViewModel extends ChangeNotifier {
             .where((id) => id != null)
             .cast<int>()
             .toList();
-    await _service.reorderRedactionCategories(categoryIds);
+    await _categoryBusinessService.reorderRedactionCategories(categoryIds);
 
     notifyListeners();
   }
@@ -103,7 +116,7 @@ class CarouselEditorViewModel extends ChangeNotifier {
             .where((id) => id != null)
             .cast<int>()
             .toList();
-    await _service.reorderTagCategories(categoryIds);
+    await _categoryBusinessService.reorderTagCategories(categoryIds);
 
     notifyListeners();
   }
@@ -114,7 +127,7 @@ class CarouselEditorViewModel extends ChangeNotifier {
     required String displayName,
     String? description,
   }) async {
-    final id = await _service.addRedactionCategory(
+    final id = await _categoryBusinessService.addRedactionCategory(
       name: name,
       displayName: displayName,
       description: description,
@@ -142,7 +155,7 @@ class CarouselEditorViewModel extends ChangeNotifier {
     required String description,
     String? color,
   }) async {
-    final id = await _service.addTagCategory(
+    final id = await _categoryBusinessService.addTagCategory(
       name: name,
       displayName: displayName,
       description: description,
@@ -166,11 +179,9 @@ class CarouselEditorViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  // Dans carousel_editor_view_model.dart, ajoutons cette méthode
-
   /// **MODIFICATION DE CATÉGORIE TAG**
   Future<void> updateTagCategory(TagCategory updatedCategory) async {
-    await _service.updateTagCategory(updatedCategory);
+    await _categoryBusinessService.updateTagCategory(updatedCategory);
 
     // Mettre à jour localement
     final index = _tagCategories.indexWhere((c) => c.id == updatedCategory.id);
@@ -183,7 +194,7 @@ class CarouselEditorViewModel extends ChangeNotifier {
   Future<void> updateRedactionCategory(
     RedactionCategory updatedCategory,
   ) async {
-    await _service.updateRedactionCategory(updatedCategory);
+    await _categoryBusinessService.updateRedactionCategory(updatedCategory);
 
     // Mettre à jour localement
     final index = _redactionCategories.indexWhere(
@@ -193,5 +204,22 @@ class CarouselEditorViewModel extends ChangeNotifier {
       _redactionCategories[index] = updatedCategory;
       notifyListeners();
     }
+  }
+
+  /// **SUPPRESSION DE CATÉGORIES**
+  Future<void> deleteTagCategory(int categoryId) async {
+    await _categoryBusinessService.deleteTagCategory(categoryId);
+
+    // Supprimer localement
+    _tagCategories.removeWhere((c) => c.id == categoryId);
+    notifyListeners();
+  }
+
+  Future<void> deleteRedactionCategory(int categoryId) async {
+    await _categoryBusinessService.deleteRedactionCategory(categoryId);
+
+    // Supprimer localement
+    _redactionCategories.removeWhere((c) => c.id == categoryId);
+    notifyListeners();
   }
 }

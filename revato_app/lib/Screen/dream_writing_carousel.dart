@@ -7,7 +7,7 @@ import 'package:revato_app/widgets/Dream_Carousel/DreamCarouselStepper.dart';
 import 'package:revato_app/widgets/Dream_Carousel/DreamNotePage.dart';
 import 'package:revato_app/widgets/Dream_Carousel/DreamTagsPage.dart';
 import 'package:revato_app/widgets/Dream_Carousel/DreamTitlePage.dart';
-import 'package:revato_app/services/navigation_core.dart';
+import 'package:revato_app/services/utils/navigation_core.dart';
 import 'package:revato_app/widgets/dream_app_bar.dart';
 
 /// **CAROUSEL PRINCIPAL** - Responsabilité : Structure et navigation

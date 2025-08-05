@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:revato_app/services/text_cleaning_service.dart';
+import 'package:revato_app/services/utils/text_cleaning_service.dart';
 import '../../viewmodel/carousel_editor_view_model.dart';
 import 'custom_color_picker.dart';
 
@@ -94,13 +94,11 @@ class _AddTagDialogState extends State<AddTagDialog> {
       _displayNameController.text,
     );
 
-    widget.viewModel.addRedactionCategory(
+    widget.viewModel.addTagCategory(
       name: technicalName,
       displayName: _displayNameController.text.trim(),
-      description:
-          _descriptionController.text.isEmpty
-              ? null
-              : _descriptionController.text.trim(),
+      description: _descriptionController.text.trim(),
+      color: _selectedColor,
     );
     Navigator.pop(context);
   }

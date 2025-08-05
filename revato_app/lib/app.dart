@@ -4,7 +4,7 @@ import 'package:revato_app/Screen/dream_editor_carousel.dart';
 import 'package:revato_app/viewmodel/dream_filter_view_model.dart';
 import 'package:revato_app/Screen/dream_analysis.dart';
 import 'package:revato_app/Screen/dream_list_screen.dart';
-import 'package:revato_app/services/navigation_core.dart';
+import 'package:revato_app/services/utils/navigation_core.dart';
 import 'themes/theme_provider.dart';
 import 'themes/light_theme.dart';
 import 'themes/dark_theme.dart';
