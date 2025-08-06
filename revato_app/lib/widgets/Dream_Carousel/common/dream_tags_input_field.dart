@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:revato_app/widgets/Dream_Carousel/common/components/index.dart';
+import 'package:revato_app/widgets/Dream_Carousel/common/components/tag_edit_manager.dart';
 
 /// Composant principal de gestion des tags
 /// Responsabilité : Orchestration des micro-composants
@@ -101,6 +102,7 @@ class _DreamTagsInputFieldState extends State<DreamTagsInputField> {
   Widget build(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
+
       children: [
         // Champ de saisie
         TagInputWidget(
@@ -135,12 +137,18 @@ class _DreamTagsInputFieldState extends State<DreamTagsInputField> {
           },
           onEditTag:
               widget.allowEditing
-                  ? (tag) {
-                    final index = widget.tags.indexOf(tag);
-                    if (index >= 0) {
-                      // TODO: Implémenter l'édition de tag
-                      // Pour l'instant, on peut juste supprimer et laisser l'utilisateur re-taper
-                    }
+                  ? (tag) async {
+                    final tagEditManager = TagEditManager(context);
+                    await tagEditManager.handleTagEdit(
+                      tag: tag,
+                      currentTags: widget.tags,
+                      onTagsChanged: widget.onChanged,
+                      onEditTag: (editedTag) {
+                        // Met le tag dans le champ de saisie pour édition locale
+                        _controller.text = editedTag;
+                        _focusNode.requestFocus();
+                      },
+                    );
                   }
                   : null,
         ),

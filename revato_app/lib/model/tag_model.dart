@@ -10,9 +10,11 @@ class TagCategory {
   // **PROPRIÉTÉS PRINCIPALES**
   int? id; // Identifiant unique en base de données (optionnel car auto-généré)
   String name; // Nom technique de la catégorie (ex: "dream_location")
-  String? displayName; // Nom affiché dans l'UI (ex: "Lieux", "Acteurs")
-  String? description; // Description lisible (ex: "Lieux et environnements")
+  String displayName; // Nom affiché dans l'UI (ex: "Lieux", "Acteurs")
+  String description; // Description lisible (ex: "Lieux et environnements")
   String? color; // Couleur hex pour l'affichage (ex: "#E57373")
+  bool isDisplay = true; // Indique si la catégorie est affichée dans l'UI
+  int displayOrder = 0; // Ordre d'affichage des catégories
   DateTime createdAt; // Date de création
 
   /// **CONSTRUCTEUR**
@@ -20,9 +22,11 @@ class TagCategory {
   TagCategory({
     this.id, // ID optionnel (géré par la DB)
     required this.name, // Nom obligatoire (clé technique)
-    this.displayName, // Nom affiché optionnel (pour l'UI)
-    this.description, // Description optionnelle (affichage UI)
+    required this.displayName, // Nom affiché optionnel (pour l'UI)
+    required this.description, // Description optionnelle (affichage UI)
     this.color, // Couleur optionnelle (hex)
+    this.isDisplay = true, // Par défaut, la catégorie est affichée
+    this.displayOrder = 0, // Par défaut, l'ordre est à 0
     DateTime? createdAt, // Date optionnelle
   }) : createdAt = createdAt ?? DateTime.now(); // Date actuelle par défaut
 
@@ -33,9 +37,11 @@ class TagCategory {
     return TagCategory(
       id: map['id'] as int?, // ID depuis la DB
       name: map['name'] as String, // Nom technique
-      displayName: map['display_name'] as String?, // Nom affiché optionnel
-      description: map['description'] as String?, // Description optionnelle
+      displayName: map['display_name'] as String, // Nom affiché optionnel
+      description: map['description'] as String, // Description optionnelle
       color: map['color'] as String?, // Couleur hex optionnelle
+      isDisplay: map['is_display'] == 1, // Affichage optionnel
+      displayOrder: map['display_order'] as int? ?? 0, // Ordre d'affichage
       createdAt: DateTime.parse(
         map['created_at'] as String,
       ), // Parse de la date
@@ -50,6 +56,8 @@ class TagCategory {
       'name': name,
       'description': description,
       'color': color,
+      'is_display': isDisplay ? 1 : 0, // Convertit booléen en int
+      'display_order': displayOrder,
       'created_at': createdAt.toIso8601String(), // Format ISO pour la DB
     };
   }

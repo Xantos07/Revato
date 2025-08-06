@@ -20,11 +20,7 @@ Widget buildDateTab(BuildContext context, DreamFilterViewModel vm) {
         padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
         child: Text(
           'Trier par',
-          style: TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-            color: Color(0xFF7C3AED),
-          ),
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
         ),
       ),
       SizedBox(height: 12),
@@ -34,7 +30,6 @@ Widget buildDateTab(BuildContext context, DreamFilterViewModel vm) {
           child: Container(
             padding: EdgeInsets.symmetric(horizontal: 24, vertical: 14),
             decoration: BoxDecoration(
-              color: Colors.white,
               borderRadius: BorderRadius.circular(32),
               border: Border.all(
                 color: const Color.fromARGB(255, 174, 174, 174),
@@ -44,15 +39,11 @@ Widget buildDateTab(BuildContext context, DreamFilterViewModel vm) {
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(icon, color: Colors.black),
+                Icon(icon),
                 SizedBox(width: 12),
                 Text(
                   label,
-                  style: TextStyle(
-                    fontSize: 16,
-                    color: Colors.black,
-                    fontWeight: FontWeight.w600,
-                  ),
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
                 ),
               ],
             ),
@@ -63,11 +54,7 @@ Widget buildDateTab(BuildContext context, DreamFilterViewModel vm) {
         padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 26),
         child: Text(
           'Filtrer par période',
-          style: TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-            color: Color(0xFF7C3AED),
-          ),
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
         ),
       ),
       SizedBox(height: 12),
@@ -76,7 +63,6 @@ Widget buildDateTab(BuildContext context, DreamFilterViewModel vm) {
           constraints: const BoxConstraints(maxWidth: 300),
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
           decoration: BoxDecoration(
-            color: Color.fromARGB(255, 255, 228, 228).withOpacity(0.06),
             borderRadius: BorderRadius.circular(18),
             border: Border.all(
               color: Color.fromARGB(255, 255, 255, 255).withOpacity(0.18),
@@ -107,15 +93,12 @@ Widget buildDateTab(BuildContext context, DreamFilterViewModel vm) {
                       vm.setFilterPeriod(picked, end);
                     }
                   },
-                  icon: Icon(
-                    Icons.calendar_today,
-                    color: Color.fromARGB(255, 0, 0, 0),
-                  ),
+                  icon: Icon(Icons.calendar_today),
                   label: Text(
                     start != null
                         ? 'Du: ${_formatDate(start)}'
                         : 'Choisir début',
-                    style: TextStyle(color: Color.fromARGB(255, 0, 0, 0)),
+                    style: TextStyle(),
                   ),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Color.fromARGB(
@@ -146,13 +129,10 @@ Widget buildDateTab(BuildContext context, DreamFilterViewModel vm) {
                       vm.setFilterPeriod(start, picked);
                     }
                   },
-                  icon: Icon(
-                    Icons.calendar_today,
-                    color: Color.fromARGB(255, 0, 0, 0),
-                  ),
+                  icon: Icon(Icons.calendar_today),
                   label: Text(
                     end != null ? 'Au: ${_formatDate(end)}' : 'Choisir fin',
-                    style: TextStyle(color: Color.fromARGB(255, 0, 0, 0)),
+                    style: TextStyle(),
                   ),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Color.fromARGB(
@@ -181,17 +161,17 @@ Widget buildDateTab(BuildContext context, DreamFilterViewModel vm) {
               onPressed: () {
                 vm.setFilterPeriod(null, null);
               },
-              icon: Icon(Icons.clear, color: Color.fromARGB(255, 0, 0, 0)),
+              icon: Icon(
+                Icons.clear,
+                color: Theme.of(context).colorScheme.primary,
+              ),
               label: Text(
                 'Réinitialiser la période',
                 style: TextStyle(
                   fontSize: 14,
-                  color: Color.fromARGB(255, 0, 0, 0),
                   fontWeight: FontWeight.w500,
+                  color: Theme.of(context).colorScheme.primary,
                 ),
-              ),
-              style: TextButton.styleFrom(
-                foregroundColor: Color.fromARGB(255, 0, 0, 0),
               ),
             ),
           ],

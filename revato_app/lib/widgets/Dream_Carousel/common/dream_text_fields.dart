@@ -27,7 +27,7 @@ class DreamTextField extends StatelessWidget {
   Widget build(BuildContext context) {
     return TextField(
       controller: controller,
-      decoration: dreamInputDecoration(label),
+      decoration: dreamInputDecoration(context, label),
       style: style ?? const TextStyle(fontSize: 18),
       minLines: minLines,
       maxLines: maxLines,
@@ -76,7 +76,7 @@ class DreamMultilineField extends StatelessWidget {
     return Expanded(
       child: TextField(
         controller: controller,
-        decoration: dreamInputDecoration(label),
+        decoration: dreamInputDecoration(context, label),
         style: const TextStyle(fontSize: 18),
         minLines: null,
         maxLines: null,

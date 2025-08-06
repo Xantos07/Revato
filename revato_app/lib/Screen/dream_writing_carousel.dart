@@ -7,8 +7,8 @@ import 'package:revato_app/widgets/Dream_Carousel/DreamCarouselStepper.dart';
 import 'package:revato_app/widgets/Dream_Carousel/DreamNotePage.dart';
 import 'package:revato_app/widgets/Dream_Carousel/DreamTagsPage.dart';
 import 'package:revato_app/widgets/Dream_Carousel/DreamTitlePage.dart';
-import 'package:revato_app/services/dream_service.dart';
-import 'package:revato_app/services/navigation_core.dart';
+import 'package:revato_app/services/utils/navigation_core.dart';
+import 'package:revato_app/widgets/dream_app_bar.dart';
 
 /// **CAROUSEL PRINCIPAL** - Responsabilité : Structure et navigation
 class DreamWritingCarousel extends StatefulWidget {
@@ -43,7 +43,7 @@ class _DreamWritingCarouselState extends State<DreamWritingCarousel> {
     else {
       // Logique par défaut : sauvegarder et naviguer
       try {
-        await DreamService().insertDreamWithData(data);
+        await DreamWritingViewModel().insertDreamWithData(data);
         if (mounted) {
           ScaffoldMessenger.of(
             context,
@@ -111,36 +111,8 @@ class _DreamWritingCarouselState extends State<DreamWritingCarousel> {
   /// Construit l'AppBar en fonction de l'état d'édition sinon rien
   AppBar? _buildAppBar() {
     return widget.initialDream != null
-        ? AppBar(
-          title: const Text(
-            'Modifier le rêve',
-            style: TextStyle(
-              color: Color(0xFF7C3AED),
-              fontWeight: FontWeight.bold,
-              fontSize: 24,
-              letterSpacing: 1.2,
-            ),
-          ),
-          backgroundColor: Colors.white,
-          elevation: 0,
-          centerTitle: true,
-          iconTheme: const IconThemeData(color: Color(0xFF7C3AED)),
-        )
-        : AppBar(
-          title: const Text(
-            'mon rêve',
-            style: TextStyle(
-              color: Color(0xFF7C3AED),
-              fontWeight: FontWeight.bold,
-              fontSize: 24,
-              letterSpacing: 1.2,
-            ),
-          ),
-          backgroundColor: Colors.white,
-          elevation: 0,
-          centerTitle: true,
-          iconTheme: const IconThemeData(color: Color(0xFF7C3AED)),
-        );
+        ? buildDreamAppBar(title: 'Modifier mon rêve', context: context)
+        : buildDreamAppBar(title: 'Mon rêve', context: context);
   }
 
   Widget _buildCarouselContent(DreamWritingViewModel vm, List<Widget> pages) {
@@ -162,7 +134,7 @@ class _DreamWritingCarouselState extends State<DreamWritingCarousel> {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(24),
           ),
-          color: Colors.white.withOpacity(0.97),
+          color: Theme.of(context).cardColor.withOpacity(0.97),
           child: Padding(
             padding: const EdgeInsets.all(8.0),
             child: pages[vm.currentPage],
@@ -273,8 +245,8 @@ class _DreamPageBuilder {
             final existingTags = snapshot.data ?? [];
             final localTags = vm.getLocalTagsForCategory(category.name);
             return DreamTagsPage(
-              title: category.description ?? category.name,
-              label: 'Ajoute des ${category.name}...',
+              title: category.displayName,
+              label: 'Ajoute des ${category.description}...',
               tags: localTags,
               onChanged: (tags) => vm.setTagsForCategory(category.name, tags),
               chipColor: category.getFlutterColor(),
@@ -290,7 +262,7 @@ class _DreamPageBuilder {
       ...vm.availableCategoriesRedaction.map((category) {
         final noteController = synchronizer.getNoteController(category.name);
         return DreamNotePage(
-          title: category.description,
+          title: category.displayName,
           label: 'écrit sur : ${category.description}...',
           controller: noteController,
         );

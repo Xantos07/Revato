@@ -1,11 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:revato_app/model/dream_model.dart';
-import 'package:revato_app/services/dream_service.dart';
-import 'package:revato_app/viewmodel/dream_filter_view_model.dart';
+import 'package:revato_app/Screen/graph_web_view.dart';
+
 import 'package:revato_app/widgets/DreamFilter/filter_panel.dart';
 import 'package:revato_app/widgets/DreamFilter/search_bar.dart';
 import 'package:revato_app/widgets/DreamList/DreamSummaryCard.dart';
+import 'package:revato_app/widgets/dream_app_bar.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+import 'package:revato_app/model/dream_model.dart';
+import 'package:revato_app/viewmodel/dream_filter_view_model.dart';
+import 'package:revato_app/viewmodel/dream_list_view_model.dart';
+import 'package:revato_app/viewmodel/graph_view_model.dart';
 
 class DreamListScreen extends StatefulWidget {
   const DreamListScreen({super.key});
@@ -26,16 +32,33 @@ class DreamListScreen extends StatefulWidget {
 }
 
 class _DreamListScreenState extends State<DreamListScreen> {
-  final DreamService _dreamService = DreamService();
   late final DreamFilterViewModel _filterViewModel;
+  late final DreamListViewModel _dreamListViewModel;
   List<Dream> _allDreams = [];
   bool _isLoading = true;
+  bool _showGraph = false; // Toggle entre liste et graphique
+
+  static const String _showGraphKey = 'showGraphDreamList';
 
   @override
   void initState() {
     super.initState();
     _filterViewModel = DreamFilterViewModel(); // Créer une seule fois
+    _dreamListViewModel = DreamListViewModel();
     _loadDreams();
+    _loadShowGraphPref();
+  }
+
+  Future<void> _loadShowGraphPref() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      _showGraph = prefs.getBool(_showGraphKey) ?? false;
+    });
+  }
+
+  Future<void> _saveShowGraphPref(bool value) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(_showGraphKey, value);
   }
 
   @override
@@ -46,9 +69,10 @@ class _DreamListScreenState extends State<DreamListScreen> {
 
   Future<void> _loadDreams() async {
     try {
-      print('_loadDreams appelée'); // Pour debug
+      print('_loadDreams appelée');
 
-      final dreams = await _dreamService.getAllDreamsWithTagsAndRedactions();
+      final dreams =
+          await _dreamListViewModel.getAllDreamsWithTagsAndRedactions();
       setState(() {
         _allDreams = dreams;
         _isLoading = false;
@@ -68,21 +92,7 @@ class _DreamListScreenState extends State<DreamListScreen> {
 
       value: _filterViewModel,
       child: Scaffold(
-        appBar: AppBar(
-          title: const Text(
-            'Mes rêves',
-            style: TextStyle(
-              color: Color(0xFF7C3AED),
-              fontWeight: FontWeight.bold,
-              fontSize: 24,
-              letterSpacing: 1.2,
-            ),
-          ),
-          backgroundColor: Colors.white,
-          elevation: 0,
-          centerTitle: true,
-          iconTheme: const IconThemeData(color: Color(0xFF7C3AED)),
-        ),
+        appBar: buildDreamAppBar(title: 'Mes rêves', context: context),
         body: Column(
           children: [
             // Search bar for filtering dreams
@@ -104,9 +114,45 @@ class _DreamListScreenState extends State<DreamListScreen> {
                 });
               },
             ),
+
+            //Correction
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                ElevatedButton.icon(
+                  onPressed: () async {
+                    await _saveShowGraphPref(false);
+                    setState(() => _showGraph = false);
+                  },
+                  icon: const Icon(Icons.list),
+                  label: const Text('Liste'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor:
+                        !_showGraph ? Theme.of(context).primaryColor : null,
+                  ),
+                ),
+                ElevatedButton.icon(
+                  onPressed: () async {
+                    await _saveShowGraphPref(true);
+                    setState(() => _showGraph = true);
+                  },
+                  icon: const Icon(Icons.analytics),
+                  label: const Text('Graphique'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor:
+                        _showGraph ? Theme.of(context).primaryColor : null,
+                  ),
+                ),
+              ],
+            ),
+
             Expanded(
               child:
-                  _isLoading
+                  _showGraph
+                      ? GraphWebView(
+                        viewModel: GraphViewModel(),
+                      ) // Afficher le graphique
+                      : _isLoading
                       ? const Center(child: CircularProgressIndicator())
                       : _allDreams.isEmpty
                       ? const Center(child: Text('Aucun rêve enregistré.'))
@@ -141,12 +187,7 @@ class _DreamListScreenState extends State<DreamListScreen> {
                                   const SizedBox(height: 8),
                                   TextButton(
                                     onPressed: () => vm.clearAll(),
-                                    child: const Text(
-                                      'Effacer les filtres',
-                                      style: TextStyle(
-                                        color: Color(0xFF7C3AED),
-                                      ),
-                                    ),
+                                    child: const Text('Effacer les filtres'),
                                   ),
                                 ],
                               ),
@@ -156,9 +197,15 @@ class _DreamListScreenState extends State<DreamListScreen> {
                           return ListView.builder(
                             padding: const EdgeInsets.all(16),
                             itemCount: filteredDreams.length,
+                            // Optimisations de performance
+                            physics: const BouncingScrollPhysics(),
+                            cacheExtent: 1000, // Cache plus d'éléments
                             itemBuilder: (context, index) {
                               final dream = filteredDreams[index];
                               return DreamSummaryCard(
+                                key: ValueKey(
+                                  dream.id,
+                                ), // Clé unique pour éviter les rebuilds
                                 dream: dream,
                                 onDreamUpdated: () {
                                   print(

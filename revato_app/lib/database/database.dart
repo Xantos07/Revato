@@ -25,8 +25,18 @@ class AppDatabase {
   /// Point d'entrée unique pour obtenir la connexion à la base de données
   /// Lazy loading : crée la DB seulement au premier accès
   Future<Database> get database async {
-    if (_database != null) return _database!; // Retourne l'instance existante
-    _database = await _initDatabase(); // Sinon, initialise la DB
+    if (_database != null) {
+      final currentVersion = await _database!.getVersion();
+
+      if (currentVersion < 2) {
+        await _database!.close();
+        _database = null;
+      }
+    }
+
+    if (_database == null) {
+      _database = await _initDatabase();
+    }
     return _database!;
   }
 
@@ -39,8 +49,9 @@ class AppDatabase {
     // Ouvre ou crée la base avec gestion des versions
     return await openDatabase(
       path,
-      version: 1, // Version actuelle du schéma
+      version: 2, // Version actuelle du schéma
       onCreate: _createDatabase, // Callback de création si DB n'existe pas
+      onUpgrade: _upgradeDatabase,
     );
   }
 
@@ -61,12 +72,15 @@ class AppDatabase {
 
     // **TABLE CATÉGORIES DE RÉDACTIONS**
     // Définit les types de notes possibles (ex: "notation du rêve", "ressenti")
+    // is_display et display_order ajouter a la migration V2
     await db.execute('''
       CREATE TABLE redaction_categories (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         name TEXT NOT NULL UNIQUE,  
         display_name TEXT NOT NULL,           
-        description TEXT,                     
+        description TEXT,            
+        is_display INTEGER DEFAULT 1,       
+        display_order INTEGER DEFAULT 0,         
         created_at TEXT NOT NULL
       )
      ''');
@@ -99,20 +113,23 @@ class AppDatabase {
 
     // **TABLE CATÉGORIES DE TAGS**
     // Définit les types de tags possibles (ex: "location", "actor", "feeling")
+    // is_display et display_order ajouter a la migration V2
     await db.execute('''
         CREATE TABLE tag_categories (
           id INTEGER PRIMARY KEY AUTOINCREMENT,
           name TEXT NOT NULL UNIQUE,     
           display_name TEXT NOT NULL,         
           description TEXT,                      
-          color TEXT,                            
+          color TEXT,                     
+          is_display INTEGER DEFAULT 1,   
+          display_order INTEGER DEFAULT 0,       
           created_at TEXT NOT NULL
         )
     ''');
 
     // **TABLE TAGS INDIVIDUELS**
     // Stocke les tags spécifiques saisis par l'utilisateur
-    await db.execute('''
+    await db.execute(''' 
         CREATE TABLE tags (
           id INTEGER PRIMARY KEY AUTOINCREMENT,
           name TEXT NOT NULL,                    
@@ -163,11 +180,15 @@ class AppDatabase {
         'name': 'dream_notation',
         'display_name': 'Notation du rêve',
         'description': 'notation du rêve',
+        'is_display': 1,
+        'display_order': 1,
       },
       {
         'name': 'dream_notation_feeling',
         'display_name': 'Notation du ressenti du rêve',
         'description': 'ressenti du rêve',
+        'is_display': 1,
+        'display_order': 2,
       },
     ];
 
@@ -188,36 +209,130 @@ class AppDatabase {
         'display_name': 'Lieux du rêve',
         'description': 'Lieux et environnements du rêve',
         'color': '#E57373', // Rouge clair
+        'is_display': 1,
+        'display_order': 1,
       },
       {
         'name': 'actor', // Personnes présentes
         'display_name': 'Personnes dans le rêve',
         'description': 'Personnes et personnages',
         'color': '#64B5F6', // Bleu clair
+        'is_display': 1,
+        'display_order': 2,
       },
       {
         'name': 'previous_day_event', // Événements récents influents
         'display_name': 'Événements récents',
         'description': 'Événements de la veille',
         'color': '#81C784', // Vert clair
+        'is_display': 1,
+        'display_order': 3,
       },
       {
         'name': 'previous_day_feeling', // État émotionnel précédent
         'display_name': 'État émotionnel de la veille',
         'description': 'Ressentis de la veille',
         'color': '#BA68C8', // Violet clair
+        'is_display': 1,
+        'display_order': 4,
       },
       {
         'name': 'dream_feeling', // Émotions dans le rêve
         'display_name': 'Émotions du rêve',
         'description': 'Ressentis du rêve',
         'color': '#FFD54F', // Jaune clair
+        'is_display': 1,
+        'display_order': 5,
       },
     ];
 
     // **INSERTION EN BASE**
     for (final category in categories) {
       await db.insert('tag_categories', {...category, 'created_at': now});
+    }
+  }
+
+  /// **MIGRATION DE SCHÉMA**
+
+  /// **GESTIONNAIRE DE MIGRATIONS**
+  /// Applique les modifications de schéma selon la version
+  Future<void> _upgradeDatabase(
+    Database db,
+    int oldVersion,
+    int newVersion,
+  ) async {
+    print('Upgrading database from $oldVersion to $newVersion');
+    // Migration de v1 vers v2 : ajout des colonnes de personnalisation
+    if (oldVersion < 2) {
+      await _migrateToVersion2(db);
+    }
+
+    // Future migrations...
+    // if (oldVersion < 3) {
+    //   await _migrateToVersion3(db);
+    // }
+  }
+
+  /// **MIGRATION VERS VERSION 2 (non public donc pourra être modifiée)**
+  /// Ajoute les colonnes de personnalisation du carousel
+  Future<void> _migrateToVersion2(Database db) async {
+    // Ajout des colonnes pour les catégories de rédaction
+    await db.execute('''
+      ALTER TABLE redaction_categories 
+      ADD COLUMN is_display INTEGER DEFAULT 1
+    ''');
+
+    await db.execute('''
+      ALTER TABLE redaction_categories 
+      ADD COLUMN display_order INTEGER DEFAULT 0
+    ''');
+
+    // Ajout des colonnes pour les catégories de tags
+    await db.execute('''
+      ALTER TABLE tag_categories 
+      ADD COLUMN is_display INTEGER DEFAULT 1
+    ''');
+
+    await db.execute('''
+      ALTER TABLE tag_categories 
+      ADD COLUMN display_order INTEGER DEFAULT 0
+    ''');
+
+    // Mise à jour des ordres par défaut
+    await _setDefaultDisplayOrders(db);
+  }
+
+  /// **DÉFINITION DES ORDRES D'AFFICHAGE PAR DÉFAUT**
+  /// Assigne un ordre logique aux catégories existantes
+  Future<void> _setDefaultDisplayOrders(Database db) async {
+    // Ordre des catégories de rédaction
+    final redactionOrders = {'dream_notation': 1, 'dream_notation_feeling': 2};
+
+    for (final entry in redactionOrders.entries) {
+      await db.update(
+        'redaction_categories',
+        {'display_order': entry.value},
+        where: 'name = ?',
+        whereArgs: [entry.key],
+      );
+    }
+
+    // Ordre des catégories de tags
+    final tagOrders = {
+      'location': 1,
+      'actor': 2,
+      'previous_day_event': 3,
+      'previous_day_feeling': 4,
+      'dream_feeling': 5,
+    };
+
+    for (final entry in tagOrders.entries) {
+      await db.update(
+        'tag_categories',
+        {'display_order': entry.value},
+        where: 'name = ?',
+        whereArgs: [entry.key],
+      );
     }
   }
 }

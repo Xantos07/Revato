@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:revato_app/model/dream_model.dart';
-import 'package:revato_app/widgets/dream_writing_carousel.dart';
+import 'package:revato_app/Screen/dream_writing_carousel.dart';
+import 'package:revato_app/services/business/dream_business_service.dart';
 import 'package:revato_app/widgets/DreamDetail/DreamDetail.dart';
-import 'package:revato_app/services/dream_service.dart';
+
+// A refactoriser :)
 
 class NavigationCore {
   // Gestion du changement d'onglet principal
@@ -16,6 +18,13 @@ class NavigationCore {
   /// Va à l'onglet "Mon rêve"
   void goToDreamWritting() {
     if (_tabController != null) {
+      _tabController!(1);
+    }
+  }
+
+  /// Va à l'onglet "Editer"
+  void goToDreamEditor() {
+    if (_tabController != null) {
       _tabController!(0);
     }
   }
@@ -25,14 +34,14 @@ class NavigationCore {
     print('Navigating to Dream List Tab');
     if (_tabController != null) {
       print('Oui je suis bien dans Navigating to Dream List Tab');
-      _tabController!(1);
+      _tabController!(2);
     }
   }
 
   /// Va à l'onglet "Analyse"
   void goToDreamAnalyse() {
     if (_tabController != null) {
-      _tabController!(2);
+      _tabController!(3);
     }
   }
 
@@ -55,6 +64,7 @@ class NavigationCore {
 
   /// Naviguer vers l'édition d'un rêve
   void navigateToEditDream(Dream dream, {VoidCallback? onDreamUpdated}) async {
+    // Ouvre la page d'édition du rêve
     final result = await _navigator?.push<Dream>(
       MaterialPageRoute(
         builder:
@@ -62,9 +72,9 @@ class NavigationCore {
               initialDream: dream,
               onSubmit: (data) async {
                 try {
-                  await DreamService().UpdateDreamWithData(dream.id, data);
+                  await DreamBusinessService().updateDream(dream.id, data);
                   // Récupère le rêve à jour
-                  final updatedDream = await DreamService()
+                  final updatedDream = await DreamBusinessService()
                       .getDreamWithTagsAndRedactions(dream.id);
                   // Ferme la page d'édition et retourne le rêve à jour
                   Navigator.of(context).pop(updatedDream);

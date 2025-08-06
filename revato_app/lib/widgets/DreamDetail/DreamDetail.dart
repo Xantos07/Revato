@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:revato_app/model/dream_model.dart';
-import 'package:revato_app/services/navigation_core.dart';
+import 'package:revato_app/services/utils/navigation_core.dart';
 import 'package:revato_app/viewmodel/dream_detail_view_model.dart';
 import 'package:revato_app/widgets/DreamList/DreamChipsRow.dart';
 import 'package:revato_app/widgets/Utils.dart';
@@ -38,16 +38,14 @@ class DreamDetail extends StatelessWidget {
                 title: const Text(
                   'Mon rêve',
                   style: TextStyle(
-                    color: Color(0xFF7C3AED),
                     fontWeight: FontWeight.bold,
                     fontSize: 24,
                     letterSpacing: 1.2,
                   ),
                 ),
-                backgroundColor: Colors.white,
+
                 elevation: 0,
                 centerTitle: true,
-                iconTheme: const IconThemeData(color: Color(0xFF7C3AED)),
               ),
               body: SingleChildScrollView(
                 padding: const EdgeInsets.symmetric(
@@ -62,7 +60,7 @@ class DreamDetail extends StatelessWidget {
                       style: const TextStyle(
                         fontSize: 26,
                         fontWeight: FontWeight.bold,
-                        color: Color(0xFF7C3AED),
+
                         letterSpacing: 0.5,
                       ),
                     ),
@@ -77,19 +75,21 @@ class DreamDetail extends StatelessWidget {
                       for (final redaction in dream.redactions) ...[
                         Text(
                           redaction.displayName,
-                          style: const TextStyle(
-                            fontSize: 16,
+                          style: TextStyle(
+                            fontSize: 22,
                             fontWeight: FontWeight.bold,
-                            color: Color(0xFF7C3AED),
+                            color: Theme.of(context).colorScheme.primary,
                           ),
                         ),
                         const SizedBox(height: 4),
                         Text(
                           redaction.content,
-                          style: const TextStyle(
-                            fontSize: 16,
-                            color: Colors.black87,
-                          ),
+                          style: const TextStyle(fontSize: 16),
+                        ),
+                        Container(
+                          margin: const EdgeInsets.symmetric(vertical: 16),
+                          height: 1,
+                          color: Theme.of(context).dividerColor,
                         ),
                         const SizedBox(height: 12),
                       ],
@@ -101,12 +101,12 @@ class DreamDetail extends StatelessWidget {
                     ],
                     if (dream.tags.isNotEmpty) ...[
                       const SizedBox(height: 16),
-                      const Text(
+                      Text(
                         'Tags :',
                         style: TextStyle(
-                          fontSize: 16,
+                          fontSize: 22,
                           fontWeight: FontWeight.bold,
-                          color: Color(0xFF7C3AED),
+                          color: Theme.of(context).colorScheme.primary,
                         ),
                       ),
                       const SizedBox(height: 8),
@@ -119,7 +119,7 @@ class DreamDetail extends StatelessWidget {
                     Container(
                       margin: const EdgeInsets.symmetric(vertical: 16),
                       height: 1,
-                      color: const Color.fromARGB(255, 0, 0, 0),
+                      color: Theme.of(context).dividerColor,
                     ),
 
                     Row(
@@ -185,7 +185,6 @@ class DreamDetail extends StatelessWidget {
             'Supprimer votre rêve',
             style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
           ),
-          backgroundColor: Colors.white,
           content: const Text.rich(
             TextSpan(
               children: [

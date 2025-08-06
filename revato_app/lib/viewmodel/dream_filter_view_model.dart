@@ -1,24 +1,22 @@
 import 'package:flutter/material.dart';
-import 'package:revato_app/services/dream_service.dart';
+import 'package:revato_app/services/business/category_business_service.dart';
+import 'package:revato_app/services/business/tag_business_service.dart';
 import 'package:revato_app/model/tag_model.dart';
 import 'package:revato_app/model/dream_model.dart';
 
-/// **VIEW MODEL POUR LE FILTRAGE DES RÊVES**
-///
-/// RESPONSABILITÉS (pattern MVVM) :
-/// - Gère l'état des filtres et recherche (Model → View)
-/// - Expose les données formatées pour l'UI (View binding)
-/// - Coordonne les services mais ne contient pas de logique métier
-/// - Notifie les changements d'état à la View via ChangeNotifier
-
 class DreamFilterViewModel extends ChangeNotifier {
   // **INJECTION DE DÉPENDANCE**
-  final DreamService _dreamService;
+  final TagBusinessService _tagBusinessService;
+  final CategoryBusinessService _categoryBusinessService;
 
   /// **CONSTRUCTEUR AVEC INJECTION DE DÉPENDANCE**
   /// Permet une meilleure testabilité et découplage
-  DreamFilterViewModel({DreamService? dreamService})
-    : _dreamService = dreamService ?? DreamService() {
+  DreamFilterViewModel({
+    CategoryBusinessService? categoryBusinessService,
+    TagBusinessService? tagBusinessService,
+  }) : _categoryBusinessService =
+           categoryBusinessService ?? CategoryBusinessService(),
+       _tagBusinessService = tagBusinessService ?? TagBusinessService() {
     _initializeAsync();
   }
 
@@ -77,11 +75,14 @@ class DreamFilterViewModel extends ChangeNotifier {
     notifyListeners();
 
     try {
-      _availableTagCategories = await _dreamService.getAllTagCategories();
+      _availableTagCategories = await _categoryBusinessService
+          .getAllTagCategories(orderBy: 'name');
 
       // Charger les tags pour chaque catégorie
       for (final category in _availableTagCategories) {
-        final tags = await _dreamService.getTagsForCategory(category.name);
+        final tags = await _tagBusinessService.getTagsForCategory(
+          category.name,
+        );
         _tagsByCategory[category.name] = tags;
       }
     } catch (e) {
@@ -102,20 +103,12 @@ class DreamFilterViewModel extends ChangeNotifier {
 
   /// **MÉTHODE POUR AJOUTER/RETIRER UN TAG DE FILTRAGE**
   void toggleTagFilter(String tagName) {
-    debugPrint('=== TOGGLE TAG FILTER ===');
-    debugPrint('Tag à basculer: "$tagName"');
-    debugPrint('Tags avant: $_selectedTags');
-
     if (_selectedTags.contains(tagName)) {
       _selectedTags.remove(tagName);
-      debugPrint('Tag retiré');
     } else {
       _selectedTags.add(tagName);
-      debugPrint('Tag ajouté');
     }
 
-    debugPrint('Tags après: $_selectedTags');
-    debugPrint('========================');
     notifyListeners();
   }
 
@@ -168,13 +161,6 @@ class DreamFilterViewModel extends ChangeNotifier {
   List<Dream> filterDreams(List<Dream> dreams) {
     var filteredDreams = dreams;
 
-    debugPrint('=== DÉBUT FILTRAGE ===');
-    debugPrint('Nombre de rêves total: ${dreams.length}');
-    debugPrint('Texte de recherche: "$_searchText"');
-    debugPrint('Tags sélectionnés: $_selectedTags');
-    debugPrint('Date de début: ${_filterStartDate?.toString()}');
-    debugPrint('Date de fin: ${_filterEndDate?.toString()}');
-
     // Filtrage par texte de recherche (titre)
     if (_searchText.isNotEmpty) {
       filteredDreams =
@@ -185,43 +171,26 @@ class DreamFilterViewModel extends ChangeNotifier {
                 ),
               )
               .toList();
-      debugPrint('Après filtrage texte: ${filteredDreams.length} rêves');
     }
 
     // Filtrage par tags sélectionnés
     if (_selectedTags.isNotEmpty) {
-      debugPrint('--- DÉBUT FILTRAGE PAR TAGS ---');
       filteredDreams =
           filteredDreams.where((dream) {
-            // Debug: affichage des tags du rêve
-            final dreamTagNames = dream.tags.map((tag) => tag.name).toList();
-            debugPrint('Rêve "${dream.title}" a les tags: $dreamTagNames');
-            debugPrint('Tags recherchés: $_selectedTags');
-
             // Vérifier si le rêve contient au moins un des tags sélectionnés
             final hasMatchingTag = _selectedTags.any((selectedTag) {
               final foundTag = dream.tags.any((dreamTag) {
                 final match = dreamTag.name == selectedTag;
-                debugPrint(
-                  'Comparaison: "${dreamTag.name}" == "$selectedTag" = $match',
-                );
                 return match;
               });
               return foundTag;
             });
 
-            debugPrint(
-              'Rêve "${dream.title}" correspond aux filtres: $hasMatchingTag',
-            );
-            debugPrint('---');
             return hasMatchingTag;
           }).toList();
-      debugPrint('--- FIN FILTRAGE PAR TAGS ---');
-      debugPrint('Après filtrage tags: ${filteredDreams.length} rêves');
     }
 
     if (_filterStartDate != null || _filterEndDate != null) {
-      debugPrint('--- DÉBUT FILTRAGE PAR DATE ---');
       filteredDreams =
           filteredDreams.where((dream) {
             final createdAt = dream.createdAt;
@@ -231,18 +200,9 @@ class DreamFilterViewModel extends ChangeNotifier {
             final isBeforeEnd =
                 _filterEndDate == null || createdAt.isBefore(_filterEndDate!);
 
-            debugPrint(
-              'Rêve "${dream.title}" - Date: $createdAt, '
-              'Après début: $isAfterStart, Avant fin: $isBeforeEnd',
-            );
-
             return isAfterStart && isBeforeEnd;
           }).toList();
-      debugPrint('--- FIN FILTRAGE PAR DATE ---');
-      debugPrint('Après filtrage date: ${filteredDreams.length} rêves');
     }
-
-    debugPrint('=== FIN FILTRAGE ===');
 
     filteredDreams.sort(
       (a, b) =>

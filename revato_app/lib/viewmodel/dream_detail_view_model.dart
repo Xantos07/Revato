@@ -1,16 +1,16 @@
 import 'package:flutter/foundation.dart';
 import 'package:revato_app/model/dream_model.dart';
-import 'package:revato_app/services/dream_service.dart';
-import 'package:revato_app/services/navigation_core.dart';
+import 'package:revato_app/services/business/dream_business_service.dart';
+import 'package:revato_app/services/utils/navigation_core.dart';
 
 class DreamDetailViewModel extends ChangeNotifier {
-  final DreamService _dreamService;
+  final DreamBusinessService _dreamBusinessService;
   final NavigationCore _navigationService;
 
   DreamDetailViewModel({
-    DreamService? dreamService,
+    DreamBusinessService? dreamService,
     NavigationCore? navigationService,
-  }) : _dreamService = dreamService ?? DreamService(),
+  }) : _dreamBusinessService = dreamService ?? DreamBusinessService(),
        _navigationService = navigationService ?? NavigationCore();
 
   // État privé
@@ -27,8 +27,6 @@ class DreamDetailViewModel extends ChangeNotifier {
   }
 
   Future<void> viewDream(Dream dream) async {
-    // Navigation vers les détails du rêve
-    print('Navigating to dream details for: ${dream.title}');
     _navigationService.navigateToDreamDetail(dream);
   }
 
@@ -39,7 +37,7 @@ class DreamDetailViewModel extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final success = await _dreamService.deleteDream(dreamId);
+      final success = await _dreamBusinessService.deleteDream(dreamId);
       if (success) {
         _navigationService.goBack();
       } else {
