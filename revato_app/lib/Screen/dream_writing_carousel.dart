@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:provider/provider.dart';
 import 'package:revato_app/model/dream_model.dart';
 import 'package:revato_app/viewmodel/dream_writing_view_model.dart';
@@ -149,7 +150,13 @@ class _DreamWritingCarouselState extends State<DreamWritingCarousel> {
       page: vm.currentPage,
       totalPages: totalPages,
       onPrev: () {
-        if (vm.currentPage > 0) vm.setPage(vm.currentPage - 1);
+        if (vm.currentPage > 0) {
+          vm.setPage(vm.currentPage - 1);
+          // 🔧 FIX : Force rebuild en mode release
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (mounted) setState(() {});
+          });
+        }
       },
       onNext: () {
         if (vm.currentPage == 0 && vm.dreamTitle.isEmpty) {
@@ -160,6 +167,10 @@ class _DreamWritingCarouselState extends State<DreamWritingCarousel> {
         }
         if (vm.currentPage < totalPages - 1) {
           vm.setPage(vm.currentPage + 1);
+          // 🔧 FIX : Force rebuild en mode release
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (mounted) setState(() {});
+          });
         } else {
           _handleSubmit(vm.collectData());
         }
