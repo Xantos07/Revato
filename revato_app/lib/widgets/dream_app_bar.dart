@@ -1,6 +1,8 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:revato_app/themes/theme_provider.dart';
+import 'package:revato_app/Screen/about_screen.dart';
 
 AppBar buildDreamAppBar({
   required String title,
@@ -19,6 +21,29 @@ AppBar buildDreamAppBar({
     centerTitle: true,
 
     actions: [
+      // Menu hamburger avec À propos
+      PopupMenuButton<String>(
+        onSelected: (value) {
+          if (value == 'about') {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const AboutScreen()),
+            );
+          }
+        },
+        itemBuilder:
+            (context) => [
+              const PopupMenuItem(
+                value: 'about',
+                child: ListTile(
+                  leading: Icon(Icons.info),
+                  title: Text('À propos'),
+                  contentPadding: EdgeInsets.zero,
+                ),
+              ),
+            ],
+      ),
+      // Bouton thème
       Consumer<ThemeProvider>(
         builder: (context, themeProvider, child) {
           return IconButton(

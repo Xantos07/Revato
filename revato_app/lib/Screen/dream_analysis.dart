@@ -19,10 +19,7 @@ class _DreamAnalysisScreenState extends State<DreamAnalysis> {
     return ChangeNotifierProvider(
       create: (context) => StatisticsViewModel(),
       child: Scaffold(
-        appBar: buildDreamAppBar(
-          title: 'Statistiques des rêves',
-          context: context,
-        ),
+        appBar: buildDreamAppBar(title: 'Statistiques', context: context),
         body: Consumer<StatisticsViewModel>(
           builder: (context, viewModel, child) {
             if (viewModel.isLoading) {

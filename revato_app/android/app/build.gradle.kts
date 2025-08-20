@@ -51,6 +51,9 @@ android {
     }
 
     buildTypes {
+        debug {
+            applicationIdSuffix = ".debug"
+        }
         release {
             // Signature avec la clé de production
             signingConfig = signingConfigs.getByName("release")
