@@ -128,7 +128,13 @@ class _DreamListScreenState extends State<DreamListScreen> {
                   label: const Text('Liste'),
                   style: ElevatedButton.styleFrom(
                     backgroundColor:
-                        !_showGraph ? Theme.of(context).primaryColor : null,
+                        !_showGraph
+                            ? Theme.of(context).colorScheme.primary
+                            : null,
+                    foregroundColor:
+                        !_showGraph
+                            ? Theme.of(context).colorScheme.onPrimary
+                            : null,
                   ),
                 ),
                 ElevatedButton.icon(
@@ -140,7 +146,13 @@ class _DreamListScreenState extends State<DreamListScreen> {
                   label: const Text('Graphique'),
                   style: ElevatedButton.styleFrom(
                     backgroundColor:
-                        _showGraph ? Theme.of(context).primaryColor : null,
+                        _showGraph
+                            ? Theme.of(context).colorScheme.primary
+                            : null,
+                    foregroundColor:
+                        _showGraph
+                            ? Theme.of(context).colorScheme.onPrimary
+                            : null,
                   ),
                 ),
               ],

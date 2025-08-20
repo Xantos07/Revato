@@ -64,6 +64,7 @@ flutter:
   # To add assets to your application, add an assets section, like this:
   assets:
     - assets/graph_template.html
+    - assets/d3.min.js
   #   - images/a_dot_burr.jpeg
   #   - images/a_dot_ham.jpeg
 

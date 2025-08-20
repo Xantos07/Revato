@@ -65,9 +65,16 @@ class _GraphWebViewState extends State<GraphWebView> {
   // ========== INITIALISATION WEBVIEW ==========
   /// Initialise la WebView avec le template HTML et configure les communications
   void _initWebView() async {
-    // Charger le template HTML depuis les assets
+    // Charger le template HTML et D3.js depuis les assets
     final htmlContent = await rootBundle.loadString(
       'assets/graph_template.html',
+    );
+    final d3Content = await rootBundle.loadString('assets/d3.min.js');
+
+    // Injecter D3.js dans le HTML
+    final modifiedHtml = htmlContent.replaceFirst(
+      '<script>',
+      '<script>$d3Content</script><script>',
     );
 
     _controller =
@@ -92,7 +99,7 @@ class _GraphWebViewState extends State<GraphWebView> {
               _handleWebViewMessage(message.message);
             },
           )
-          ..loadHtmlString(htmlContent);
+          ..loadHtmlString(modifiedHtml);
   }
 
   // ========== COMMUNICATION FLUTTER ↔ WEBVIEW ==========
