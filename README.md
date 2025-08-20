@@ -1,4 +1,4 @@
-# # 🌙 Revato - Journal de Rêves Intelligent
+# # 🌙 Revato - Journal de Rêves
 
 > Notez vos rêves avec Revato, l'application mobile qui révolutionne la tenue d'un journal onirique.
 
