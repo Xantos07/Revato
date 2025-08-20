@@ -69,10 +69,8 @@ class _GraphWebViewState extends State<GraphWebView> {
     final htmlContent = await rootBundle.loadString(
       'assets/graph_template.html',
     );
-    final d3Content = await rootBundle.loadString(
-      'assets/d3.min.js',
-    );
-    
+    final d3Content = await rootBundle.loadString('assets/d3.min.js');
+
     // Injecter D3.js dans le HTML
     final modifiedHtml = htmlContent.replaceFirst(
       '<script>',
