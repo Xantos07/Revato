@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:revato_app/themes/theme_provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class AboutScreen extends StatelessWidget {
@@ -12,8 +14,19 @@ class AboutScreen extends StatelessWidget {
         padding: const EdgeInsets.all(16.0),
         children: [
           // Logo/Icône de l'app
-          const Center(
-            child: Icon(Icons.nights_stay, size: 80, color: Colors.deepPurple),
+          Consumer<ThemeProvider>(
+            builder: (context, themeProvider, child) {
+              return Center(
+                child: Icon(
+                  Icons.nights_stay,
+                  size: 80,
+                  color:
+                      themeProvider.isDarkMode
+                          ? Colors.white
+                          : const Color(0xFF7C3AED),
+                ),
+              );
+            },
           ),
           const SizedBox(height: 24),
 
