@@ -22,26 +22,37 @@ AppBar buildDreamAppBar({
 
     actions: [
       // Menu hamburger avec À propos
-      PopupMenuButton<String>(
-        onSelected: (value) {
-          if (value == 'about') {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => const AboutScreen()),
-            );
-          }
+      Consumer<ThemeProvider>(
+        builder: (context, themeProvider, child) {
+          return PopupMenuButton<String>(
+            icon: Icon(
+              Icons.more_vert,
+              color:
+                  themeProvider.isDarkMode
+                      ? Colors.white
+                      : const Color(0xFF7C3AED),
+            ),
+            onSelected: (value) {
+              if (value == 'about') {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const AboutScreen()),
+                );
+              }
+            },
+            itemBuilder:
+                (context) => [
+                  const PopupMenuItem(
+                    value: 'about',
+                    child: ListTile(
+                      leading: Icon(Icons.info),
+                      title: Text('À propos'),
+                      contentPadding: EdgeInsets.zero,
+                    ),
+                  ),
+                ],
+          );
         },
-        itemBuilder:
-            (context) => [
-              const PopupMenuItem(
-                value: 'about',
-                child: ListTile(
-                  leading: Icon(Icons.info),
-                  title: Text('À propos'),
-                  contentPadding: EdgeInsets.zero,
-                ),
-              ),
-            ],
       ),
       // Bouton thème
       Consumer<ThemeProvider>(
