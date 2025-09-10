@@ -18,10 +18,20 @@
     <script>
         let simulation, nodes, links, nodeElements, linkElements;
         const svg = d3.select("#graph");
-        const width = window.innerWidth;
-        const height = window.innerHeight;
+        let width, height;
         
-        svg.attr("width", width).attr("height", height);
+        // Fonction pour mettre à jour les dimensions
+        function updateDimensions() {
+            width = window.innerWidth || 800;
+            height = window.innerHeight || 600;
+            svg.attr("width", width).attr("height", height);
+        }
+        
+        // Initialiser les dimensions
+        updateDimensions();
+        
+        // Mettre à jour les dimensions si la fenêtre change
+        window.addEventListener('resize', updateDimensions);
         
         // Ajouter le zoom et pan
         const zoom = d3.zoom()
@@ -40,7 +50,21 @@
             simulation = d3.forceSimulation()
                 .force("link", d3.forceLink().id(d => d.id).distance(100))
                 .force("charge", d3.forceManyBody().strength(-300))
-                .force("center", d3.forceCenter(width / 2, height / 2));
+                .force("center", d3.forceCenter(400, 300)) // Centre fixe pour démarrer
+                .force("x", d3.forceX(400).strength(0.1)) // Force vers le centre X
+                .force("y", d3.forceY(300).strength(0.1)); // Force vers le centre Y
+        }
+
+        // Fonction pour réinitialiser la simulation avec les bonnes dimensions
+        function updateSimulation() {
+            if (simulation) {
+                const centerX = width * 0.5;
+                const centerY = height * 0.5;
+                simulation.force("center", d3.forceCenter(centerX, centerY));
+                simulation.force("x", d3.forceX(centerX).strength(0.1));
+                simulation.force("y", d3.forceY(centerY).strength(0.1));
+                simulation.alpha(0.3).restart();
+            }
         }
 
 
@@ -101,6 +125,17 @@
             // Supprimer les éléments existants (sauf le container)
             container.selectAll("*").remove();
             
+            // S'assurer que les dimensions sont correctes
+            updateDimensions();
+            
+            // Forcer les positions initiales au centre visible
+            nodes.forEach((d, i) => {
+                d.x = width * 0.5 + (Math.random() - 0.5) * 100;
+                d.y = height * 0.5 + (Math.random() - 0.5) * 100;
+                d.fx = null; // S'assurer qu'il n'y a pas de position fixe
+                d.fy = null;
+            });
+            
             // Créer les liens dans le container
             linkElements = container.append("g")
                 .selectAll("line")
@@ -149,10 +184,16 @@
             // Démarrer la simulation
             simulation.nodes(nodes);
             simulation.force("link").links(links);
-            simulation.alpha(1).restart();
+            updateSimulation(); // Mettre à jour le centre avec les bonnes dimensions
             
             // Mise à jour des positions
             simulation.on("tick", () => {
+                // Contraindre les nœuds dans l'écran visible
+                nodes.forEach(d => {
+                    d.x = Math.max(50, Math.min(width - 50, d.x));
+                    d.y = Math.max(50, Math.min(height - 50, d.y));
+                });
+                
                 linkElements
                     .attr("x1", d => d.source.x)
                     .attr("y1", d => d.source.y)

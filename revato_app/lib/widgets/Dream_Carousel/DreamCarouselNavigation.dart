@@ -49,7 +49,7 @@ class DreamCarouselNavigation extends StatelessWidget {
           Expanded(
             child: Align(
               alignment: Alignment.centerRight,
-              child: ElevatedButton.icon(
+              child: ElevatedButton(
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Theme.of(context).colorScheme.primary,
                   foregroundColor: Theme.of(context).colorScheme.onPrimary,
@@ -63,13 +63,34 @@ class DreamCarouselNavigation extends StatelessWidget {
                   ),
                 ),
                 onPressed: onNext,
-                icon: Icon(
-                  page < totalPages - 1 ? Icons.arrow_forward : Icons.check,
-                ),
-                label: Text(
-                  page < totalPages - 1 ? 'Suivant' : 'Valider',
-                  style: const TextStyle(fontWeight: FontWeight.bold),
-                ),
+                child:
+                    page < totalPages - 1
+                        ? Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              'Suivant',
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            Icon(Icons.arrow_forward),
+                          ],
+                        )
+                        : Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              'Valider',
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            Icon(Icons.check),
+                          ],
+                        ),
               ),
             ),
           ),

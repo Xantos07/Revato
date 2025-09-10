@@ -26,7 +26,6 @@ class RevatoApp extends StatelessWidget {
 
             // Thème clair
             theme: LightTheme.theme,
-
             // Thème sombre
             darkTheme: DarkTheme.theme,
 

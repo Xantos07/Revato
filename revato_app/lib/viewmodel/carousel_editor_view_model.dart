@@ -62,7 +62,7 @@ class CarouselEditorViewModel extends ChangeNotifier {
   }
 
   Future<void> toggleTagDisplay(int categoryId, bool isDisplay) async {
-    await _categoryBusinessService.toggleRedactionCategoryDisplay(
+    await _categoryBusinessService.toggleTagCategoryDisplay(
       categoryId,
       isDisplay,
     );
