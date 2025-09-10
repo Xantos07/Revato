@@ -29,7 +29,7 @@ class ThemeProvider extends ChangeNotifier {
         _themeMode = ThemeMode.dark;
         break;
       default:
-        _themeMode = ThemeMode.system;
+        _themeMode = ThemeMode.dark;
     }
     notifyListeners();
   }
