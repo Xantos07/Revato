@@ -25,11 +25,13 @@ class DreamWritingCarousel extends StatefulWidget {
 class _DreamWritingCarouselState extends State<DreamWritingCarousel> {
   late final _dataSynchronizer = _DreamDataSynchronizer();
   late final _pageBuilder = _DreamPageBuilder();
+  late final PageController _pageController = PageController();
   bool _initialized = false;
 
   @override
   void dispose() {
     _dataSynchronizer.dispose();
+    _pageController.dispose();
     super.dispose();
   }
 
@@ -118,29 +120,30 @@ class _DreamWritingCarouselState extends State<DreamWritingCarousel> {
 
   Widget _buildCarouselContent(DreamWritingViewModel vm, List<Widget> pages) {
     return Expanded(
-      child: AnimatedSwitcher(
-        duration: const Duration(milliseconds: 400),
-        transitionBuilder:
-            (child, animation) => SlideTransition(
-              position: Tween<Offset>(
-                begin: const Offset(1, 0),
-                end: Offset.zero,
-              ).animate(animation),
-              child: child,
+      child: PageView.builder(
+        controller: _pageController,
+        itemCount: pages.length,
+        onPageChanged: (int page) {
+          vm.setPage(page);
+          // Force rebuild pour synchroniser l'état
+          if (mounted) setState(() {});
+        },
+        itemBuilder: (context, index) {
+          return Container(
+            margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            child: Card(
+              elevation: 10,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(24),
+              ),
+              color: Theme.of(context).cardColor.withOpacity(0.97),
+              child: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: pages[index],
+              ),
             ),
-        child: Card(
-          key: ValueKey(vm.currentPage),
-          elevation: 10,
-          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(24),
-          ),
-          color: Theme.of(context).cardColor.withOpacity(0.97),
-          child: Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: pages[vm.currentPage],
-          ),
-        ),
+          );
+        },
       ),
     );
   }
@@ -151,11 +154,10 @@ class _DreamWritingCarouselState extends State<DreamWritingCarousel> {
       totalPages: totalPages,
       onPrev: () {
         if (vm.currentPage > 0) {
-          vm.setPage(vm.currentPage - 1);
-          // 🔧 FIX : Force rebuild en mode release
-          WidgetsBinding.instance.addPostFrameCallback((_) {
-            if (mounted) setState(() {});
-          });
+          _pageController.previousPage(
+            duration: const Duration(milliseconds: 300),
+            curve: Curves.easeInOut,
+          );
         }
       },
       onNext: () {
@@ -166,11 +168,10 @@ class _DreamWritingCarouselState extends State<DreamWritingCarousel> {
           return;
         }
         if (vm.currentPage < totalPages - 1) {
-          vm.setPage(vm.currentPage + 1);
-          // 🔧 FIX : Force rebuild en mode release
-          WidgetsBinding.instance.addPostFrameCallback((_) {
-            if (mounted) setState(() {});
-          });
+          _pageController.nextPage(
+            duration: const Duration(milliseconds: 300),
+            curve: Curves.easeInOut,
+          );
         } else {
           _handleSubmit(vm.collectData());
         }
