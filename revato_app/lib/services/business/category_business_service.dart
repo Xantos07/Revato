@@ -120,6 +120,25 @@ class CategoryBusinessService {
 
   /// **GESTION DES CATÉGORIES DE TAGS**
 
+  /// Bascule l'affichage d'une catégorie de tag
+  Future<void> toggleTagCategoryDisplay(int categoryId, bool isDisplay) async {
+    if (categoryId <= 0) {
+      throw ArgumentError('ID de catégorie invalide: $categoryId');
+    }
+
+    try {
+      await _categoryRepo.toggleTagCategoryVisibility(categoryId, isDisplay);
+      print('Catégorie tag $categoryId ${isDisplay ? 'affichée' : 'masquée'}');
+    } catch (e) {
+      print(
+        'Erreur lors du changement de visibilité de la catégorie tag $categoryId: $e',
+      );
+      rethrow;
+    }
+  }
+
+  /// **GESTION DES CATÉGORIES DE TAGS**
+
   /// Réorganise l'ordre des catégories de tags
   Future<void> reorderTagCategories(List<int> categoryIds) async {
     if (categoryIds.isEmpty) {
