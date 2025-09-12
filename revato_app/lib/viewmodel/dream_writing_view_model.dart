@@ -6,6 +6,7 @@ import 'package:revato_app/model/tag_model.dart';
 import 'package:revato_app/services/business/dream_business_service.dart';
 import 'package:revato_app/services/business/tag_business_service.dart';
 import 'package:revato_app/services/business/category_business_service.dart';
+import 'package:revato_app/services/utils/save_tempory_carousel.dart';
 
 class DreamWritingViewModel extends ChangeNotifier {
   final DreamBusinessService _dreamBusinessService;
@@ -131,6 +132,13 @@ class DreamWritingViewModel extends ChangeNotifier {
   void updateTitle(String title) {
     _dreamTitle = title;
     notifyListeners();
+
+    // Sauvegarde temporaire
+    SaveTemporyCarousel.saveTempData(
+      dreamTitle: _dreamTitle,
+      tagsByCategory: _tagsByCategory,
+      notesByCategory: _notesByCategory,
+    );
   }
 
   /// **MISE À JOUR DES NOTES**
