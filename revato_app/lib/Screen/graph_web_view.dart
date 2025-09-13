@@ -4,9 +4,6 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:revato_app/viewmodel/dream_filter_view_model.dart';
 import 'package:revato_app/widgets/DreamDetail/DreamDetail.dart';
-import 'package:revato_app/widgets/DreamFilter/filter_panel.dart';
-import 'package:revato_app/widgets/DreamFilter/search_bar.dart';
-import 'package:revato_app/widgets/dream_app_bar.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import 'package:revato_app/viewmodel/graph_view_model.dart';
 
@@ -65,16 +62,9 @@ class _GraphWebViewState extends State<GraphWebView> {
   // ========== INITIALISATION WEBVIEW ==========
   /// Initialise la WebView avec le template HTML et configure les communications
   void _initWebView() async {
-    // Charger le template HTML et D3.js depuis les assets
+    // Charger le template HTML depuis les assets
     final htmlContent = await rootBundle.loadString(
       'assets/graph_template.html',
-    );
-    final d3Content = await rootBundle.loadString('assets/d3.min.js');
-
-    // Injecter D3.js dans le HTML
-    final modifiedHtml = htmlContent.replaceFirst(
-      '<script>',
-      '<script>$d3Content</script><script>',
     );
 
     _controller =
@@ -99,7 +89,7 @@ class _GraphWebViewState extends State<GraphWebView> {
               _handleWebViewMessage(message.message);
             },
           )
-          ..loadHtmlString(modifiedHtml);
+          ..loadHtmlString(htmlContent);
   }
 
   // ========== COMMUNICATION FLUTTER ↔ WEBVIEW ==========
@@ -180,36 +170,6 @@ class _GraphWebViewState extends State<GraphWebView> {
 
   // ========== CONTRÔLES DE NAVIGATION ==========
 
-  /// Affiche les statistiques du graphique
-  void _showStats() {
-    final stats = _viewModel.getGraphStats();
-
-    showDialog(
-      context: context,
-      builder:
-          (context) => AlertDialog(
-            title: Text('Statistiques du Graphique'),
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text('Total des rêves: ${stats['totalDreams']}'),
-                Text('Connexions trouvées: ${stats['totalConnections']}'),
-                Text(
-                  'Connexions moyennes par rêve: ${stats['avgConnectionsPerDream'].toStringAsFixed(1)}',
-                ),
-              ],
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: Text('Fermer'),
-              ),
-            ],
-          ),
-    );
-  }
-
   /// Effectue un zoom avant sur le graphique
   void _zoomIn() {
     if (_controller == null) return;
@@ -232,73 +192,59 @@ class _GraphWebViewState extends State<GraphWebView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Stack(
-        children: [
-          if (_controller != null && _isInitialized)
-            Padding(
-              padding: EdgeInsets.only(),
-              child: WebViewWidget(controller: _controller!),
-            )
-          else
-            Container(
-              child: Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    CircularProgressIndicator(),
-                    SizedBox(height: 16),
-                    Text(
-                      'Initialisation du graphique...',
-                      style: TextStyle(fontSize: 16),
-                    ),
-                  ],
+      body: Padding(
+        padding: const EdgeInsets.only(top: 16),
+        child: Stack(
+          children: [
+            if (_controller != null && _isInitialized)
+              Padding(
+                padding: EdgeInsets.only(),
+                child: WebViewWidget(controller: _controller!),
+              )
+            else
+              Container(
+                child: Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      CircularProgressIndicator(),
+                      SizedBox(height: 16),
+                      Text(
+                        'Initialisation du graphique...',
+                        style: TextStyle(fontSize: 16),
+                      ),
+                    ],
+                  ),
                 ),
               ),
+            if (_isLoading && _isInitialized)
+              Center(child: CircularProgressIndicator()),
+            // Contrôles de navigation flottants
+            Positioned(
+              bottom: 20,
+              right: 20,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  FloatingActionButton.small(
+                    onPressed: _zoomIn,
+                    heroTag: "zoom_in",
+                    tooltip: "Zoomer",
+                    child: Icon(Icons.zoom_in),
+                  ),
+                  SizedBox(height: 8),
+                  FloatingActionButton.small(
+                    onPressed: _zoomOut,
+                    heroTag: "zoom_out",
+                    tooltip: "Dézoomer",
+                    child: Icon(Icons.zoom_out),
+                  ),
+                ],
+              ),
             ),
-          if (_isLoading && _isInitialized)
-            Center(child: CircularProgressIndicator()),
-          // Contrôles de navigation flottants
-          Positioned(
-            bottom: 20,
-            right: 20,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                FloatingActionButton.small(
-                  onPressed: _zoomIn,
-                  heroTag: "zoom_in",
-                  tooltip: "Zoomer",
-                  child: Icon(Icons.zoom_in),
-                ),
-                SizedBox(height: 8),
-                FloatingActionButton.small(
-                  onPressed: _zoomOut,
-                  heroTag: "zoom_out",
-                  tooltip: "Dézoomer",
-                  child: Icon(Icons.zoom_out),
-                ),
-              ],
-            ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
-  }
-
-  /// Affiche le panneau de filtres
-  void _showFilterPanel(BuildContext context) {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder:
-          (context) => ChangeNotifierProvider.value(
-            value: _filterViewModel,
-            child: FilterPanel(),
-          ),
-    ).then((_) {
-      // Rafraîchir le graphe après fermeture du panel de filtres
-      _sendDataToWebView();
-    });
   }
 }
