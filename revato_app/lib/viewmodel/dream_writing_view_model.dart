@@ -146,6 +146,13 @@ class DreamWritingViewModel extends ChangeNotifier {
   void setNoteForCategory(String category, String note) {
     _notesByCategory[category] = note;
     notifyListeners(); // Notifie l'UI du changement
+
+    // Sauvegarde temporaire
+    SaveTemporyCarousel.saveTempData(
+      dreamTitle: _dreamTitle,
+      tagsByCategory: _tagsByCategory,
+      notesByCategory: _notesByCategory,
+    );
   }
 
   /// **MISE À JOUR DES TAGS**
@@ -154,6 +161,13 @@ class DreamWritingViewModel extends ChangeNotifier {
     final validTags = _dreamBusinessService.filterValidTags(tags);
     _tagsByCategory[category] = validTags;
     notifyListeners();
+
+    // Sauvegarde temporaire
+    SaveTemporyCarousel.saveTempData(
+      dreamTitle: _dreamTitle,
+      tagsByCategory: _tagsByCategory,
+      notesByCategory: _notesByCategory,
+    );
   }
 
   ///
@@ -220,6 +234,18 @@ class DreamWritingViewModel extends ChangeNotifier {
     } catch (e) {
       debugPrint('Erreur lors de la récupération des tags: $e');
       return [];
+    }
+  }
+
+  Future<void> restoreTempIfAvailable() async {
+    final tempData = await SaveTemporyCarousel.restoreTempData();
+    if ((tempData['dreamTitle'] as String).isNotEmpty ||
+        (tempData['tagsByCategory'] as Map).isNotEmpty ||
+        (tempData['notesByCategory'] as Map).isNotEmpty) {
+      _dreamTitle = tempData['dreamTitle'] as String;
+      _tagsByCategory = tempData['tagsByCategory'] as Map<String, List<String>>;
+      _notesByCategory = tempData['notesByCategory'] as Map<String, String>;
+      notifyListeners();
     }
   }
 }

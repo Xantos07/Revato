@@ -82,6 +82,15 @@ class _DreamWritingCarouselState extends State<DreamWritingCarousel> {
             _initialized = true;
           }
 
+          // Initialisation pour la création (une seule fois)
+          if (!_initialized && widget.initialDream == null) {
+            vm.restoreTempIfAvailable().then((_) {
+              _dataSynchronizer.fillControllersFromViewModel(vm);
+              setState(() {}); // Pour rafraîchir l'UI après restauration
+            });
+            _initialized = true;
+          }
+
           // Configuration des listeners et synchronisation
           _dataSynchronizer.setupListeners(vm);
 
