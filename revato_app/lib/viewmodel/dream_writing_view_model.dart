@@ -6,6 +6,7 @@ import 'package:revato_app/model/tag_model.dart';
 import 'package:revato_app/services/business/dream_business_service.dart';
 import 'package:revato_app/services/business/tag_business_service.dart';
 import 'package:revato_app/services/business/category_business_service.dart';
+import 'package:revato_app/services/utils/save_tempory_carousel.dart';
 
 class DreamWritingViewModel extends ChangeNotifier {
   final DreamBusinessService _dreamBusinessService;
@@ -131,6 +132,13 @@ class DreamWritingViewModel extends ChangeNotifier {
   void updateTitle(String title) {
     _dreamTitle = title;
     notifyListeners();
+
+    // Sauvegarde temporaire
+    SaveTemporyCarousel.saveTempData(
+      dreamTitle: _dreamTitle,
+      tagsByCategory: _tagsByCategory,
+      notesByCategory: _notesByCategory,
+    );
   }
 
   /// **MISE À JOUR DES NOTES**
@@ -138,6 +146,13 @@ class DreamWritingViewModel extends ChangeNotifier {
   void setNoteForCategory(String category, String note) {
     _notesByCategory[category] = note;
     notifyListeners(); // Notifie l'UI du changement
+
+    // Sauvegarde temporaire
+    SaveTemporyCarousel.saveTempData(
+      dreamTitle: _dreamTitle,
+      tagsByCategory: _tagsByCategory,
+      notesByCategory: _notesByCategory,
+    );
   }
 
   /// **MISE À JOUR DES TAGS**
@@ -146,6 +161,13 @@ class DreamWritingViewModel extends ChangeNotifier {
     final validTags = _dreamBusinessService.filterValidTags(tags);
     _tagsByCategory[category] = validTags;
     notifyListeners();
+
+    // Sauvegarde temporaire
+    SaveTemporyCarousel.saveTempData(
+      dreamTitle: _dreamTitle,
+      tagsByCategory: _tagsByCategory,
+      notesByCategory: _notesByCategory,
+    );
   }
 
   ///
@@ -213,5 +235,21 @@ class DreamWritingViewModel extends ChangeNotifier {
       debugPrint('Erreur lors de la récupération des tags: $e');
       return [];
     }
+  }
+
+  Future<void> restoreTempIfAvailable() async {
+    final tempData = await SaveTemporyCarousel.restoreTempData();
+    if ((tempData['dreamTitle'] as String).isNotEmpty ||
+        (tempData['tagsByCategory'] as Map).isNotEmpty ||
+        (tempData['notesByCategory'] as Map).isNotEmpty) {
+      _dreamTitle = tempData['dreamTitle'] as String;
+      _tagsByCategory = tempData['tagsByCategory'] as Map<String, List<String>>;
+      _notesByCategory = tempData['notesByCategory'] as Map<String, String>;
+      notifyListeners();
+    }
+  }
+
+  Future<void> clearTempData() async {
+    await SaveTemporyCarousel.clearTempData();
   }
 }
