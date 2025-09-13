@@ -248,4 +248,8 @@ class DreamWritingViewModel extends ChangeNotifier {
       notifyListeners();
     }
   }
+
+  Future<void> clearTempData() async {
+    await SaveTemporyCarousel.clearTempData();
+  }
 }

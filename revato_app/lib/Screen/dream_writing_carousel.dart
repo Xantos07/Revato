@@ -48,6 +48,11 @@ class _DreamWritingCarouselState extends State<DreamWritingCarousel> {
       try {
         await DreamWritingViewModel().insertDreamWithData(data);
         if (mounted) {
+          //je clear les données temporaires seulement si c'est une création réussie
+          widget.initialDream == null
+              ? DreamWritingViewModel().clearTempData()
+              : null;
+
           ScaffoldMessenger.of(
             context,
           ).showSnackBar(const SnackBar(content: Text('Rêve enregistré !')));
@@ -56,7 +61,9 @@ class _DreamWritingCarouselState extends State<DreamWritingCarousel> {
       } catch (e) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Erreur lors de l\'enregistrement : $e')),
+            //mettre le type d'erreur exemple : titre déjà utilisé
+            //erreur de connexion a la base de donnée pour x raison
+            SnackBar(content: Text('Erreur lors de l\'enregistrement ...')),
           );
         }
       }
