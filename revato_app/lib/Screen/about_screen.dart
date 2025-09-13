@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:revato_app/themes/theme_provider.dart';
 import 'package:url_launcher/url_launcher.dart';
+import '../widgets/export_dreams_tile.dart';
 
 class AboutScreen extends StatelessWidget {
   const AboutScreen({super.key});
@@ -90,6 +91,8 @@ class AboutScreen extends StatelessWidget {
                         'https://github.com/Xantos07/Revato/issues',
                       ),
                 ),
+                const Divider(height: 1),
+                const ExportDreamsTile(),
               ],
             ),
           ),

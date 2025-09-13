@@ -32,6 +32,8 @@ dependencies:
   sqflite: ^2.3.0
   diacritic : ^0.1.6
   webview_flutter: ^4.4.2
+  csv: ^5.0.2
+  path_provider: ^2.1.1
   flutter:
     sdk: flutter
   shared_preferences: ^2.2.2  
