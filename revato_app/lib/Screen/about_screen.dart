@@ -2,12 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:revato_app/themes/theme_provider.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:revato_app/services/business/dream_business_service.dart';
-import 'package:revato_app/services/utils/export_service.dart';
+import '../widgets/export_dreams_tile.dart';
 
 class AboutScreen extends StatelessWidget {
-  AboutScreen({super.key});
-  final DreamBusinessService _dreamBusinessService = DreamBusinessService();
+  const AboutScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -94,42 +92,7 @@ class AboutScreen extends StatelessWidget {
                       ),
                 ),
                 const Divider(height: 1),
-                ListTile(
-                  leading: const Icon(Icons.download),
-                  title: const Text('Exporter vos rêves'),
-                  subtitle: const Text('Télécharger en CSV'),
-                  trailing: const Icon(Icons.file_download),
-                  onTap: () async {
-                    try {
-                      final dreams =
-                          await _dreamBusinessService
-                              .getAllDreamsWithTagsAndRedactions();
-
-                      final filePath = await ExportService.exportDreamsToCSV(
-                        dreams,
-                      );
-
-                      if (context.mounted) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text(
-                              'CSV téléchargé dans votre stockage de fichier : $filePath',
-                            ),
-                            duration: const Duration(seconds: 5),
-                          ),
-                        );
-                      }
-                    } catch (e) {
-                      if (context.mounted) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text('Erreur lors de l\'export : $e'),
-                          ),
-                        );
-                      }
-                    }
-                  },
-                ),
+                const ExportDreamsTile(),
               ],
             ),
           ),
