@@ -173,22 +173,11 @@ Les contributions sont les bienvenues ! Voici comment participer :
 
 ## 📋 Roadmap
 
-### 🎯 Version 1.0 (Actuelle)
-- [x] Interface de saisie et modification de rêves
-- [x] Système de tags et catégories
-- [x] Statistiques de base
-- [x] Visualisation graphique
-
-
-### 🚀 Version À venir
-- [ ] Export PDF/CSV
-- [ ] Thèmes personnalisables
-- [ ] Synchronisation cloud optionnelle
-
+### 🎯 Version 0.5.0
 
 ## 📄 Licence
 
-Ce projet est sous licence Mozilla Public License Version 2.0 - voir le fichier [LICENSE](../LICENSE) pour plus de détails.
+Ce projet est sous licence Mozilla Public License Version 2.0 - voir le fichier [LICENSE](https://github.com/Xantos07/Revato?tab=MPL-2.0-1-ov-file) pour plus de détails.
 
 
 - **[Xantos07](https://github.com/Xantos07)** 
