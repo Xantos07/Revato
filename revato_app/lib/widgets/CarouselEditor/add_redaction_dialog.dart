@@ -26,7 +26,36 @@ class _AddRedactionDialogState extends State<AddRedactionDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: const Text('Ajouter une étape de rédaction'),
+      titlePadding: const EdgeInsets.only(top: 16, left: 24, right: 8),
+      title: SizedBox(
+        height: 48,
+        child: Stack(
+          children: [
+            Align(
+              alignment: Alignment.centerLeft,
+              child: Padding(
+                padding: const EdgeInsets.only(right: 50),
+                child: Text(
+                  'Ajouter une étape de rédaction',
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: Theme.of(context).dialogTheme.titleTextStyle,
+                ),
+              ),
+            ),
+            Positioned(
+              right: 0,
+              top: 0,
+              child: IconButton(
+                icon: const Icon(Icons.close),
+                tooltip: 'Annuler',
+                onPressed: () => Navigator.pop(context),
+              ),
+            ),
+          ],
+        ),
+      ),
+
       content: ConstrainedBox(
         constraints: const BoxConstraints(maxHeight: 300),
         child: SingleChildScrollView(
@@ -39,7 +68,9 @@ class _AddRedactionDialogState extends State<AddRedactionDialog> {
                 decoration: const InputDecoration(
                   labelText: 'Nom affiché',
                   hintText: 'Résumé du rêve',
-                  border: OutlineInputBorder(),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.all(Radius.circular(24)),
+                  ),
                   prefixIcon: Icon(Icons.label),
                 ),
                 onChanged: (value) => setState(() {}),
@@ -51,7 +82,9 @@ class _AddRedactionDialogState extends State<AddRedactionDialog> {
                 decoration: const InputDecoration(
                   labelText: 'Description (optionnel)',
                   hintText: 'Décrivez brièvement cette étape...',
-                  border: OutlineInputBorder(),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.all(Radius.circular(24)),
+                  ),
                   prefixIcon: Icon(Icons.description),
                 ),
                 onChanged: (value) => setState(() {}),
@@ -62,10 +95,6 @@ class _AddRedactionDialogState extends State<AddRedactionDialog> {
         ),
       ),
       actions: [
-        TextButton(
-          onPressed: () => Navigator.pop(context),
-          child: const Text('Annuler'),
-        ),
         ElevatedButton(
           onPressed: _isFormValid() ? _onAdd : null,
           child: const Text('Ajouter'),

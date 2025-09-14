@@ -114,8 +114,6 @@ class _DreamListScreenState extends State<DreamListScreen> {
                 });
               },
             ),
-
-            //Correction
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
@@ -130,11 +128,12 @@ class _DreamListScreenState extends State<DreamListScreen> {
                     backgroundColor:
                         !_showGraph
                             ? Theme.of(context).colorScheme.primary
-                            : null,
+                            : Theme.of(context).colorScheme.surface,
                     foregroundColor:
                         !_showGraph
                             ? Theme.of(context).colorScheme.onPrimary
-                            : null,
+                            : Theme.of(context).colorScheme.onSurface,
+                    elevation: !_showGraph ? 3 : 1,
                   ),
                 ),
                 ElevatedButton.icon(
@@ -148,11 +147,12 @@ class _DreamListScreenState extends State<DreamListScreen> {
                     backgroundColor:
                         _showGraph
                             ? Theme.of(context).colorScheme.primary
-                            : null,
+                            : Theme.of(context).colorScheme.surface,
                     foregroundColor:
                         _showGraph
                             ? Theme.of(context).colorScheme.onPrimary
-                            : null,
+                            : Theme.of(context).colorScheme.onSurface,
+                    elevation: _showGraph ? 3 : 1,
                   ),
                 ),
               ],
