@@ -24,30 +24,58 @@ class TagEditManager {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: const Text(
-            'Modifier le tag',
-            style: TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-              fontFamily: 'Roboto',
+          titlePadding: const EdgeInsets.only(top: 16, left: 24, right: 8),
+          title: SizedBox(
+            height: 48,
+            child: Stack(
+              children: [
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: Padding(
+                    padding: const EdgeInsets.only(right: 50),
+                    child: Text(
+                      'Modifier le tag',
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: Theme.of(context).dialogTheme.titleTextStyle,
+                    ),
+                  ),
+                ),
+                Positioned(
+                  right: 0,
+                  top: 0,
+                  child: IconButton(
+                    icon: const Icon(Icons.close),
+                    tooltip: 'Annuler',
+                    onPressed: () => Navigator.of(context).pop('cancel'),
+                  ),
+                ),
+              ],
             ),
           ),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Que voulez-vous faire avec le tag "$tag" ?',
-                style: const TextStyle(fontSize: 16, fontFamily: 'Roboto'),
+          content: ConstrainedBox(
+            constraints: const BoxConstraints(maxHeight: 300, maxWidth: 400),
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const SizedBox(height: 8),
+                  Text(
+                    'Que voulez-vous faire avec le tag "$tag" ?',
+                    style: const TextStyle(fontSize: 16, fontFamily: 'Roboto'),
+                  ),
+                  const SizedBox(height: 16),
+                  const Text(
+                    'Édition locale : modifie seulement ce rêve\n'
+                    'Édition globale : modifie tous les rêves utilisant ce tag',
+                    style: TextStyle(fontSize: 12, color: Colors.grey),
+                  ),
+                ],
               ),
-              const SizedBox(height: 16),
-              const Text(
-                'Édition locale : modifie seulement ce rêve\n'
-                'Édition globale : modifie tous les rêves utilisant ce tag',
-                style: TextStyle(fontSize: 12, color: Colors.grey),
-              ),
-            ],
+            ),
           ),
+          actionsAlignment: MainAxisAlignment.spaceBetween,
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop('local'),
@@ -56,10 +84,6 @@ class TagEditManager {
             TextButton(
               onPressed: () => Navigator.of(context).pop('global'),
               child: const Text('Édition globale'),
-            ),
-            TextButton(
-              onPressed: () => Navigator.of(context).pop('cancel'),
-              child: const Text('Annuler'),
             ),
           ],
         );
