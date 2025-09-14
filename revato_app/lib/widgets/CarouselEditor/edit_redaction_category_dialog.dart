@@ -44,7 +44,35 @@ class _EditRedactionCategoryDialogState
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: const Text('Modifier la catégorie de la rédaction'),
+      titlePadding: const EdgeInsets.only(top: 16, left: 24, right: 8),
+      title: SizedBox(
+        height: 48,
+        child: Stack(
+          children: [
+            Align(
+              alignment: Alignment.centerLeft,
+              child: Padding(
+                padding: const EdgeInsets.only(right: 50),
+                child: Text(
+                  'Modifier la catégorie de la rédaction',
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: Theme.of(context).dialogTheme.titleTextStyle,
+                ),
+              ),
+            ),
+            Positioned(
+              right: 0,
+              top: 0,
+              child: IconButton(
+                icon: const Icon(Icons.close),
+                tooltip: 'Annuler',
+                onPressed: () => Navigator.pop(context),
+              ),
+            ),
+          ],
+        ),
+      ),
       content: ConstrainedBox(
         constraints: const BoxConstraints(maxHeight: 300, maxWidth: 400),
         child: SingleChildScrollView(
@@ -58,7 +86,9 @@ class _EditRedactionCategoryDialogState
                 decoration: const InputDecoration(
                   labelText: 'Nom affiché',
                   hintText: 'Lieux du rêve',
-                  border: OutlineInputBorder(),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.all(Radius.circular(24)),
+                  ),
                   prefixIcon: Icon(Icons.label),
                 ),
               ),
@@ -70,7 +100,9 @@ class _EditRedactionCategoryDialogState
                 decoration: const InputDecoration(
                   labelText: 'Description (optionnel)',
                   hintText: 'Lieux et environnements du rêve...',
-                  border: OutlineInputBorder(),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.all(Radius.circular(24)),
+                  ),
                   prefixIcon: Icon(Icons.description),
                 ),
                 maxLines: 2,
@@ -80,11 +112,8 @@ class _EditRedactionCategoryDialogState
         ),
       ),
 
+      actionsAlignment: MainAxisAlignment.spaceBetween,
       actions: [
-        TextButton(
-          onPressed: () => Navigator.pop(context),
-          child: const Text('Annuler'),
-        ),
         TextButton(
           onPressed: _deleteCategory,
           style: TextButton.styleFrom(foregroundColor: Colors.red),
