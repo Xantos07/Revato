@@ -46,5 +46,17 @@ class DarkTheme {
         color: Color.fromARGB(255, 255, 255, 255),
       ), // Couleur du texte saisi
     ),
+    dialogTheme: const DialogTheme(
+      backgroundColor: Color.fromARGB(255, 43, 43, 43),
+      titleTextStyle: TextStyle(
+        color: Colors.white,
+        fontSize: 20,
+        fontWeight: FontWeight.bold,
+      ),
+      contentTextStyle: TextStyle(color: Colors.white, fontSize: 16),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.all(Radius.circular(16)),
+      ),
+    ),
   );
 }
