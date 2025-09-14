@@ -72,6 +72,7 @@ class _AddTagDialogState extends State<AddTagDialog> {
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.all(Radius.circular(24)),
                   ),
+                  prefixIcon: Icon(Icons.label),
                 ),
                 onChanged: (value) => setState(() {}),
               ),
@@ -84,6 +85,7 @@ class _AddTagDialogState extends State<AddTagDialog> {
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.all(Radius.circular(24)),
                   ),
+                  prefixIcon: Icon(Icons.description),
                 ),
                 onChanged: (value) => setState(() {}),
                 maxLines: 2,
