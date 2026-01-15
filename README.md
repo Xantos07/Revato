@@ -178,10 +178,11 @@ Les contributions sont les bienvenues ! Voici comment participer :
 - [x] Système de tags et catégories
 - [x] Statistiques de base
 - [x] Visualisation graphique
-
+- [x] Export CSV
+- [x] Importation CSV
 
 ### 🚀 Version À venir
-- [ ] Export PDF/CSV
+
 - [ ] Thèmes personnalisables
 - [ ] Synchronisation cloud optionnelle
 

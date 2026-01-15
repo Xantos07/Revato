@@ -2,10 +2,16 @@ import 'package:revato_app/database/database.dart';
 import 'package:revato_app/model/dream_model.dart';
 import 'package:revato_app/model/redaction_individual_model.dart';
 import 'package:revato_app/model/tag_individual_model.dart';
+import 'package:revato_app/services/data/category_repository.dart';
 import 'package:sqflite/sqflite.dart';
 
 /// Repository pour les opérations CRUD des rêves
 class DreamRepository {
+  final CategoryRepository _categoryRepo;
+
+  DreamRepository({CategoryRepository? categoryRepo})
+    : _categoryRepo = categoryRepo ?? CategoryRepository();
+
   /// **RÉCUPÉRATION - TOUS LES RÊVES**
   /// Récupère tous les rêves avec leurs données associées
   Future<List<Dream>> getAllDreamsWithAssociations() async {
@@ -190,15 +196,28 @@ class DreamRepository {
       final categoryName = entry.key;
       final tags = entry.value;
 
-      // Récupérer l'id de la catégorie
+      // Récupérer ou créer la catégorie
       final categoryResult = await db.query(
         'tag_categories',
         where: 'name = ?',
         whereArgs: [categoryName],
         limit: 1,
       );
-      if (categoryResult.isEmpty) continue;
-      final categoryId = categoryResult.first['id'];
+
+      int categoryId;
+      if (categoryResult.isEmpty) {
+        // Créer automatiquement la catégorie manquante
+        final displayName = _generateDisplayName(categoryName);
+        categoryId = await _categoryRepo.addTagCategory(
+          name: categoryName,
+          displayName: displayName,
+          description: 'Catégorie importée automatiquement',
+          color: '#90CAF9',
+        );
+        print('✨ Nouvelle catégorie de tag créée : $categoryName');
+      } else {
+        categoryId = categoryResult.first['id'] as int;
+      }
 
       // **DIFFÉRENCE INSERT vs UPDATE**
       if (isUpdate) {
@@ -259,15 +278,27 @@ class DreamRepository {
       final content = entry.value;
       if (content.isEmpty) continue;
 
-      // Récupérer l'id de la catégorie de rédaction
+      // Récupérer ou créer la catégorie de rédaction
       final categoryResult = await db.query(
         'redaction_categories',
         where: 'name = ?',
         whereArgs: [categoryName],
         limit: 1,
       );
-      if (categoryResult.isEmpty) continue;
-      final categoryId = categoryResult.first['id'];
+
+      int categoryId;
+      if (categoryResult.isEmpty) {
+        // Créer automatiquement la catégorie manquante
+        final displayName = _generateDisplayName(categoryName);
+        categoryId = await _categoryRepo.addRedactionCategory(
+          name: categoryName,
+          displayName: displayName,
+          description: 'Catégorie importée automatiquement',
+        );
+        print('✨ Nouvelle catégorie de rédaction créée : $categoryName');
+      } else {
+        categoryId = categoryResult.first['id'] as int;
+      }
 
       // **DIFFÉRENCE INSERT vs UPDATE**
       if (isUpdate) {
@@ -294,5 +325,20 @@ class DreamRepository {
         'created_at': DateTime.now().toIso8601String(),
       });
     }
+  }
+
+  /// Génère un nom d'affichage lisible depuis un nom technique
+  String _generateDisplayName(String technicalName) {
+    // Remplacer les underscores par des espaces
+    String display = technicalName.replaceAll('_', ' ');
+
+    // Capitaliser chaque mot
+    return display
+        .split(' ')
+        .map((word) {
+          if (word.isEmpty) return word;
+          return word[0].toUpperCase() + word.substring(1).toLowerCase();
+        })
+        .join(' ');
   }
 }
