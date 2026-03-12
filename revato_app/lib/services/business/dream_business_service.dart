@@ -342,4 +342,72 @@ class DreamBusinessService {
       tagsByCategory[category] = updatedTags;
     }
   }
+
+  /// **OPÉRATIONS D'IMPORTATION**
+  /// Importe plusieurs rêves depuis des données structurées avec gestion des conflits
+  Future<Map<String, dynamic>> importDreams(
+    List<Map<String, dynamic>> dreamsData,
+  ) async {
+    int successCount = 0;
+    int skippedCount = 0;
+    List<String> errors = [];
+
+    // Récupérer tous les titres existants pour la gestion des conflits
+    final existingDreams = await getAllDreamsWithTagsAndRedactions();
+    final existingTitles =
+        existingDreams.map((d) => d.title.toLowerCase()).toSet();
+
+    for (final dreamData in dreamsData) {
+      try {
+        // Résoudre les conflits de titre
+        String originalTitle = dreamData['title'] ?? 'Sans titre';
+        String finalTitle = _resolveConflictingTitle(
+          originalTitle,
+          existingTitles,
+        );
+
+        // Ajouter le nouveau titre à la liste pour éviter les doublons dans le même import
+        existingTitles.add(finalTitle.toLowerCase());
+
+        // Créer les données du rêve avec le titre résolu
+        final importData = {
+          'title': finalTitle,
+          'tagsByCategory': dreamData['tagsByCategory'] ?? {},
+          'redactionsByCategory': dreamData['redactionsByCategory'] ?? {},
+        };
+
+        // Valider et créer le rêve
+        await createDream(importData);
+        successCount++;
+      } catch (e) {
+        skippedCount++;
+        errors.add('Erreur pour "${dreamData['title']}": $e');
+        print('Erreur lors de l\'importation d\'un rêve: $e');
+      }
+    }
+
+    return {
+      'success': successCount,
+      'skipped': skippedCount,
+      'errors': errors,
+      'total': dreamsData.length,
+    };
+  }
+
+  /// Résout les conflits de titre en ajoutant un suffixe numérique
+  String _resolveConflictingTitle(
+    String originalTitle,
+    Set<String> existingTitles,
+  ) {
+    String title = originalTitle;
+    int counter = 1;
+
+    // Si le titre existe déjà, ajouter un suffixe
+    while (existingTitles.contains(title.toLowerCase())) {
+      title = '$originalTitle - $counter';
+      counter++;
+    }
+
+    return title;
+  }
 }
